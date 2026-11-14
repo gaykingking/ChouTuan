@@ -29,6 +29,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.sdk.VoiceBroadcastManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.di.ChouTuanAppContainer
@@ -81,7 +83,10 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var activeModuleIndex by remember { mutableIntStateOf(0) }
-
+    val context = LocalContext.current
+    val voiceManager = remember(context) { VoiceBroadcastManager(context) }
+        val voiceBroadcastManager: VoiceBroadcastManager? = voiceManager
+    
     val moduleTitles = listOf("点单频道", "团购核销", "订单雷达", "商家工作台", "骑手配送", "SDK联调")
 
     LaunchedEffect(uiState.toastMessage) {
@@ -157,7 +162,7 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
                     1 -> GroupBuyVoucherScreen(
                         deals = uiState.toGroupDealCards(),
                         vouchers = uiState.toGroupVoucherCards(),
-                        onBuyDeal = { deal -> viewModel.onIntent(ChouTuanIntent.BuyGroupDeal(deal.id)) }
+                        onBuyDeal = { deal -> viewModel.onIntent(ChouTuanIntent.BuyGroupDeal(deal.id)); voiceManager.broadcastMerchantOrder("下单支付成功，套餐编号 ${deal.id}", 0.0) }
                     )
 
                     2 -> OrderRadarTrackScreen(
@@ -173,18 +178,17 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
                         orders = uiState.toMerchantOrderCards(),
                         products = uiState.toMerchantProductCards(),
                         onSelectTenant = { viewModel.onIntent(ChouTuanIntent.SelectMerchantTenant(it)) },
-                        onRedeemVoucher = { viewModel.onIntent(ChouTuanIntent.RedeemVoucher(it)) },
+                        onRedeemVoucher = { viewModel.onIntent(ChouTuanIntent.RedeemVoucher(it)); voiceBroadcastManager?.broadcastMerchantOrder(); dao.appendLog("[TTS] 商家核销团购券($it)触发真机语音播报") },
                         onOpenAddProduct = { viewModel.onIntent(ChouTuanIntent.ToggleAddProductDialog(true)) },
                         onToggleProductAvailability = {
                             viewModel.onIntent(ChouTuanIntent.ToggleProductAvailability(it))
                         },
-                        onAcceptOrder = { viewModel.onIntent(ChouTuanIntent.AcceptOrder(it)) }
-                    )
+                        onAcceptOrder = { viewModel.onIntent(ChouTuanIntent.AcceptOrder(it)) ; voiceBroadcastManager?.broadcastMerchantOrder(); dao.appendLog("[TTS] 商家点击接单($it)触发真机语音播报" }) }                    )
 
                     4 -> RiderDeliveryScreen(
                         tasks = uiState.toRiderTaskCards(),
                         onPickupOrder = { viewModel.onIntent(ChouTuanIntent.PickupOrder(it)) },
-                        onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)) }
+                        onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)); voiceBroadcastManager?.broadcastRiderTask(); dao.appendLog("[TTS] 骑手确认送达($it)触发真机语音播报") }
                     )
 
                     else -> SdkConsoleScreen(
