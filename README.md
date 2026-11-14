@@ -12,6 +12,12 @@
 | 模块路径 | 层级 | 作用说明 |
 | :--- | :--- | :--- |
 | `app/src/main/java/com/example/myapplication/MainActivity.kt` | **表现层 (UI)** | 应用主入口与 Jetpack Compose 全量交互界面（全频道首页、多规格弹窗、LBS 轨迹雷达、透明分账弹窗、多租户商家端、骑手大厅、SDK 联调台） |
+| `app/src/main/java/com/example/myapplication/ui/screens/UserChannelHomeScreen.kt` | **表现层 (UI Screen)** | 独立用户端全频道首页组件（餐饮外卖、丑团闪购、生鲜超市、平价买药） |
+| `app/src/main/java/com/example/myapplication/ui/screens/GroupBuyVoucherScreen.kt` | **表现层 (UI Screen)** | 独立到店团购与8位核销码页面（0抽成真直降、待核销/已核销券列表） |
+| `app/src/main/java/com/example/myapplication/ui/screens/OrderRadarTrackScreen.kt` | **表现层 (UI Screen)** | 独立高德 LBS 订单配送轨迹雷达页面 |
+| `app/src/main/java/com/example/myapplication/ui/screens/MerchantWorkspaceScreen.kt` | **表现层 (UI Screen)** | 独立多租户商家端管理工作台页面 |
+| `app/src/main/java/com/example/myapplication/ui/screens/RiderDeliveryScreen.kt` | **表现层 (UI Screen)** | 独立骑手大厅页面（集成温和 ETA 提示） |
+| `app/src/main/java/com/example/myapplication/ui/screens/SdkConsoleScreen.kt` | **表现层 (UI Screen)** | 独立 Room / Retrofit / 高德地图 / 支付 SDK 联调控制台 |
 | `app/src/main/java/com/example/myapplication/ui/state/ChouTuanUiState.kt` | **状态层 (UDF)** | 单向数据流不可变状态 `ChouTuanUiState` 与用户意图 `ChouTuanIntent` 契约 |
 | `app/src/main/java/com/example/myapplication/domain/model/ChouTuanDomain.kt` | **领域层 (Domain)** | 纯 Kotlin 业务策略 `CommissionStrategy` 与 `TransparentPricingEngine` 零抽成透明计价引擎 |
 | `app/src/main/java/com/example/myapplication/data/repository/ChouTuanRepository.kt` | **仓库层 (Repository)** | 遵循依赖倒置原则的离线优先数据仓库，统一协调本地 Room 缓存与远程网关并支持 15 分钟超时关单记录 |
