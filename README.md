@@ -33,6 +33,8 @@
 | `backend-service/order-service/src/main/java/com/choutuan/order/mq/ProfitSharingTransactionListener.java` | **分布式事务层 (RocketMQ)** | RocketMQ 半事务消息监听器，保障透明分账台账最终一致性 |
 | `backend-service/order-service/src/main/resources/application-sharding.yml` | **分库分表配置** | ShardingSphere 按 `user_id % 2` 分片路由与多租户数据源配置 |
 | `backend-service/order-service/src/main/resources/schema-sharding.sql` | **数据库初始化脚本** | MySQL 多租户商户、订单分片表、透明分账台账分片表及到店团购核销券表 DDL 脚本 |
+| `backend-service/product-service/src/main/java/com/choutuan/product/TenantProductController.java` | **商品微服务控制层** | 对齐 `ChouTuanApiService.listTenants` 的多租户门店 LBS 球面距离检索、堂食同价商品管理（含某团 23% 抽成保本溢价测算）与一键估清/上架 REST 控制器 |
+| `k8s/choutuan-k3s-deployment.yaml` | **K3s 集群部署清单** | 适配 Debian 11 + K3s 集群的多租户微服务（`gateway-service` / `product-service` / `order-service`）部署清单，内置 Nacos、RocketMQ 与 SkyWalking 链路追踪参数 |
 
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
