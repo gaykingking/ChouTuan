@@ -26,6 +26,13 @@
 | `app/src/main/java/com/example/myapplication/sdk/LocationAndPaymentSdk.kt` | **第三方 SDK 适配层** | 高德地图球面距离测算 `AMapSphericalUtils` 与温和防催命骑手调度 ETA 算法 |
 | `app/src/main/res/values/strings.xml` | **资源配置** | 应用名称配置（`丑团`） |
 | `app/build.gradle.kts` | **构建配置** | 应用包名 (`com.choutuan.app`)、SDK 版本与 Compose 依赖 |
+| `app/src/main/java/com/example/myapplication/sdk/VoiceBroadcastManager.kt` | **第三方 SDK 适配层** | Android TTS 语音播报管理器，用于商户接单与核销语音提醒 |
+| `backend-contract/ChouTuanSpringCloudContract.md` | **后端接口契约** | Spring Cloud 微服务接口契约与多租户透明分账规范文档 |
+| `backend-service/gateway-service/src/main/java/com/choutuan/gateway/filter/MultiTenantGatewayFilter.java` | **微服务网关层 (Gateway)** | Spring Cloud Gateway 全局过滤器，校验 `X-App-Id`/`X-Tenant-Id`/`X-Client-Role` 并注入 `X-Trace-Id` 与 `X-Commission-Policy: ZERO_COMMISSION` |
+| `backend-service/order-service/src/main/java/com/choutuan/order/TransparentOrderController.java` | **订单微服务控制层** | 透明订单与零抽成结算核心 REST 控制器 |
+| `backend-service/order-service/src/main/java/com/choutuan/order/mq/ProfitSharingTransactionListener.java` | **分布式事务层 (RocketMQ)** | RocketMQ 半事务消息监听器，保障透明分账台账最终一致性 |
+| `backend-service/order-service/src/main/resources/application-sharding.yml` | **分库分表配置** | ShardingSphere 按 `user_id % 2` 分片路由与多租户数据源配置 |
+| `backend-service/order-service/src/main/resources/schema-sharding.sql` | **数据库初始化脚本** | MySQL 多租户商户、订单分片表、透明分账台账分片表及到店团购核销券表 DDL 脚本 |
 
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
