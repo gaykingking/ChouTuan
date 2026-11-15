@@ -178,17 +178,17 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
                         orders = uiState.toMerchantOrderCards(),
                         products = uiState.toMerchantProductCards(),
                         onSelectTenant = { viewModel.onIntent(ChouTuanIntent.SelectMerchantTenant(it)) },
-                        onRedeemVoucher = { viewModel.onIntent(ChouTuanIntent.RedeemVoucher(it)); voiceBroadcastManager?.broadcastMerchantOrder(); dao.appendLog("[TTS] 商家核销团购券($it)触发真机语音播报") },
+                        onRedeemVoucher = { viewModel.onIntent(ChouTuanIntent.RedeemVoucher(it)); voiceBroadcastManager?.broadcastMerchantOrder(); appContainer.repository.appendLog("[TTS] 商家核销团购券($it)触发真机语音播报") },
                         onOpenAddProduct = { viewModel.onIntent(ChouTuanIntent.ToggleAddProductDialog(true)) },
                         onToggleProductAvailability = {
                             viewModel.onIntent(ChouTuanIntent.ToggleProductAvailability(it))
                         },
-                        onAcceptOrder = { viewModel.onIntent(ChouTuanIntent.AcceptOrder(it)) ; voiceBroadcastManager?.broadcastMerchantOrder(); dao.appendLog("[TTS] 商家点击接单($it)触发真机语音播报" }) }                    )
+                        onAcceptOrder = { viewModel.onIntent(ChouTuanIntent.AcceptOrder(it)) ; voiceBroadcastManager?.broadcastMerchantOrder(); appContainer.repository.appendLog("[TTS] 商家点击接单($it)触发真机语音播报" }) }                    )
 
                     4 -> RiderDeliveryScreen(
                         tasks = uiState.toRiderTaskCards(),
                         onPickupOrder = { viewModel.onIntent(ChouTuanIntent.PickupOrder(it)) },
-                        onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)); voiceBroadcastManager?.broadcastRiderTask(); dao.appendLog("[TTS] 骑手确认送达($it)触发真机语音播报") }
+                        onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)); voiceBroadcastManager?.broadcastRiderTask(); appContainer.repository.appendLog("[TTS] 骑手确认送达($it)触发真机语音播报") }
                     )
 
                     else -> SdkConsoleScreen(
