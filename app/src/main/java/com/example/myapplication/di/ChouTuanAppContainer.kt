@@ -18,7 +18,7 @@ class InMemoryChouTuanRoomDao : ChouTuanRoomDao {
         else tenants.filter { it.channelCategory == channel }
     }
 
-    override suspend fun upsertTenants(tenants: List<TenantRoomEntity>) {
+    suspend fun upsertTenants(tenants: List<TenantRoomEntity>) {
         this.tenants.clear()
         this.tenants.addAll(tenants)
     }
@@ -28,7 +28,7 @@ class InMemoryChouTuanRoomDao : ChouTuanRoomDao {
         orders.add(0, order)
     }
 
-    override suspend fun updateOrderStatus(orderId: String, status: String) {
+    suspend fun updateOrderStatus(orderId: String, status: String) {
         val idx = orders.indexOfFirst { it.orderId == orderId }
         if (idx >= 0) {
             orders[idx] = orders[idx].copy(status = status)
