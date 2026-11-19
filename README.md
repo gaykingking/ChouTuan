@@ -41,6 +41,9 @@
 | `backend-service/notification-service/src/main/java/com/choutuan/notification/RiderMerchantPushConsumer.java` | **实时消息推送服务 (notification-service)** | RocketMQ 消费者与 WebSocket / PushPlus 微信通知分发器，监听订单创建、商家 0 抽成接单、团购核销及骑手全额运费送达事件，向多租户商家端与骑手端推送语音播报指令与微信账单回执  
 | `backend-service/pom.xml` | **后端构建层 (Maven)** | Spring Boot 3 + Spring Cloud + Spring Cloud Alibaba（Nacos、RocketMQ、ShardingSphere、MySQL、Spring Web/Gateway）多模块 Maven 父工程配置（包含 `gateway-service`、`product-service`、`order-service`、`notification-service` 四个模块及统一依赖版本管理，JDK 17） |
 | `backend-service/Dockerfile` | **容器化构建层 (Docker)** | 支持多微服务复用的多阶段 Docker 构建脚本（`maven:3.9-eclipse-temurin-17` 编译打包 + `eclipse-temurin:17-jre-alpine` 精简运行），通过 `ARG SERVICE_NAME=order-service` 切换服务并预留 `JAVA_OPTS` 适配 K3s 中的 SkyWalking `-javaagent` 挂载参数 |
+| `backend-service/docker-compose.yml` | **本地联调编排 (Docker Compose)** | 本地一键启动开发环境编排文件，集成 MySQL 8.0（自动挂载 `schema-sharding.sql` 初始化分表）、Redis 7、Nacos 2.3（`MODE=standalone`）与 RocketMQ NameServer / Broker |
+| `backend-service/order-service/pom.xml` | **订单服务构建 (Maven)** | `order-service` 子模块 Maven 依赖配置，继承父工程 `backend-service/pom.xml` 并引入 Spring Boot Web、Nacos Discovery、RocketMQ、ShardingSphere JDBC 与 MySQL 驱动 |
+| `backend-service/order-service/src/main/java/com/choutuan/order/OrderServiceApplication.java` | **订单服务入口 (Spring Boot)** | `order-service` 微服务 Spring Boot 启动类，启用 `@SpringBootApplication` 与 `@EnableDiscoveryClient` 注册服务 
 
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
