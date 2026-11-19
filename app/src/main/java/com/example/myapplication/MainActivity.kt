@@ -44,6 +44,7 @@ import com.example.myapplication.ui.screens.MerchantOrderCardModel
 import com.example.myapplication.ui.screens.MerchantProductCardModel
 import com.example.myapplication.ui.screens.MerchantTenantOptionModel
 import com.example.myapplication.ui.screens.MerchantWorkspaceScreen
+import com.example.myapplication.ui.screens.OnboardingAndWithdrawScreen
 import com.example.myapplication.ui.screens.OrderRadarCardModel
 import com.example.myapplication.ui.screens.OrderRadarTrackScreen
 import com.example.myapplication.ui.screens.RiderDeliveryScreen
@@ -87,7 +88,7 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
     val voiceManager = remember(context) { VoiceBroadcastManager(context) }
         val voiceBroadcastManager: VoiceBroadcastManager? = voiceManager
     
-    val moduleTitles = listOf("点单频道", "团购核销", "订单雷达", "商家工作台", "骑手配送", "SDK联调")
+    val moduleTitles = listOf("点单频道", "团购核销", "订单雷达", "商家工作台", "骑手配送", "入驻/提现", "SDK联调")
 
     LaunchedEffect(uiState.toastMessage) {
         val message = uiState.toastMessage
@@ -190,6 +191,8 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
                         onPickupOrder = { viewModel.onIntent(ChouTuanIntent.PickupOrder(it)) },
                         onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)); voiceBroadcastManager?.broadcastRiderTask(); appContainer.repository.appendLog("[TTS] 骑手确认送达($it)触发真机语音播报") }
                     )
+
+                        5 -> OnboardingAndWithdrawScreen()
 
                     else -> SdkConsoleScreen(
                         address = uiState.userAddress,
