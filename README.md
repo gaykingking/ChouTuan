@@ -38,7 +38,9 @@
 | `backend-service/product-service/src/main/java/com/choutuan/product/TenantProductController.java` | **商品微服务控制层** | 对齐 `ChouTuanApiService.listTenants` 的多租户门店 LBS 球面距离检索、堂食同价商品管理（含某团 23% 抽成保本溢价测算）与一键估清/上架 REST 控制器 |
 | `k8s/choutuan-k3s-deployment.yaml` | **K3s 集群部署清单** | 适配 Debian 11 + K3s 集群的多租户微服务（`gateway-service` / `product-service` / `order-service`）部署清单，内置 Nacos、RocketMQ 与 SkyWalking 链路追踪参数 |
 | `.github/workflows/android-ci.yml` | **CI/CD 自动化流水线** | GitHub Actions 自动构建脚本，在 `push`/`pull_request` 到 `main` 时配置 JDK 17、运行 `./gradlew testDebugUnitTest` 与 `./gradlew assembleDebug` 并上传 `choutuan-debug-apk` 产物 |
-| `backend-service/notification-service/src/main/java/com/choutuan/notification/RiderMerchantPushConsumer.java` | **实时消息推送服务 (notification-service)** | RocketMQ 消费者与 WebSocket / PushPlus 微信通知分发器，监听订单创建、商家 0 抽成接单、团购核销及骑手全额运费送达事件，向多租户商家端与骑手端推送语音播报指令与微信账单回执 |
+| `backend-service/notification-service/src/main/java/com/choutuan/notification/RiderMerchantPushConsumer.java` | **实时消息推送服务 (notification-service)** | RocketMQ 消费者与 WebSocket / PushPlus 微信通知分发器，监听订单创建、商家 0 抽成接单、团购核销及骑手全额运费送达事件，向多租户商家端与骑手端推送语音播报指令与微信账单回执  
+| `backend-service/pom.xml` | **后端构建层 (Maven)** | Spring Boot 3 + Spring Cloud + Spring Cloud Alibaba（Nacos、RocketMQ、ShardingSphere、MySQL、Spring Web/Gateway）多模块 Maven 父工程配置（包含 `gateway-service`、`product-service`、`order-service`、`notification-service` 四个模块及统一依赖版本管理，JDK 17） |
+| `backend-service/Dockerfile` | **容器化构建层 (Docker)** | 支持多微服务复用的多阶段 Docker 构建脚本（`maven:3.9-eclipse-temurin-17` 编译打包 + `eclipse-temurin:17-jre-alpine` 精简运行），通过 `ARG SERVICE_NAME=order-service` 切换服务并预留 `JAVA_OPTS` 适配 K3s 中的 SkyWalking `-javaagent` 挂载参数 |
 
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
