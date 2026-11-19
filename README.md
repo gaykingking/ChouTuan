@@ -44,7 +44,12 @@
 | `backend-service/docker-compose.yml` | **本地联调编排 (Docker Compose)** | 本地一键启动开发环境编排文件，集成 MySQL 8.0（自动挂载 `schema-sharding.sql` 初始化分表）、Redis 7、Nacos 2.3（`MODE=standalone`）与 RocketMQ NameServer / Broker |
 | `backend-service/order-service/pom.xml` | **订单服务构建 (Maven)** | `order-service` 子模块 Maven 依赖配置，继承父工程 `backend-service/pom.xml` 并引入 Spring Boot Web、Nacos Discovery、RocketMQ、ShardingSphere JDBC 与 MySQL 驱动 |
 | `backend-service/order-service/src/main/java/com/choutuan/order/OrderServiceApplication.java` | **订单服务入口 (Spring Boot)** | `order-service` 微服务 Spring Boot 启动类，启用 `@SpringBootApplication` 与 `@EnableDiscoveryClient` 注册服务 
-
+| `backend-service/gateway-service/pom.xml` & `GatewayApplication.java` | **网关服务构建与入口 (gateway-service)** | `gateway-service` 子模块 Maven 依赖配置与 Spring Cloud Gateway 微服务启动类（集成 Nacos 服务发现与多租户全局路由过滤） |
+| `backend-service/product-service/pom.xml` & `ProductServiceApplication.java` | **商品服务构建与入口 (product-service)** | `product-service` 子模块 Maven 依赖配置与 Spring Boot 微服务启动类（启用 `@SpringBootApplication` 与 `@EnableDiscoveryClient`） |
+| `backend-service/notification-service/pom.xml` | **消息推送服务构建 (Maven)** | `notification-service` 子模块 Maven 依赖配置，继承父工程 `backend-service/pom.xml` 并引入 Web、WebSocket、Nacos Discovery 与 RocketMQ 依赖 |
+| `backend-service/notification-service/src/main/java/com/choutuan/notification/NotificationServiceApplication.java` | **消息推送服务入口 (Spring Boot)** | `notification-service` 微服务 Spring Boot 启动类，启用 `@SpringBootApplication` 与 `@EnableDiscoveryClient` 注册服务 |
+| `backend-service/notification-service/src/main/java/com/choutuan/notification/config/WebSocketBrokerConfig.java` | **STOMP WebSocket 代理配置** | 注册 `/ws/choutuan` STOMP 端点，开启 `/topic/merchant` 与 `/topic/rider` 多租户语音播报订阅前缀 |
+| `.github/workflows/backend-ci.yml` | **后端 CI 自动编译流水线** | GitHub Actions 后端自动化构建脚本，在 `backend-service/**` 变更时使用 JDK 17 自动执行 `mvn -B -f backend-service/pom.xml clean package -DskipTests` 验证四大微服务全量编译通过 |
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
