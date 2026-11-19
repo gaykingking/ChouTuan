@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: choutuan-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: choutuan_order
+      TZ: Asia/Shanghai
+    volumes:
+      - ./order-service/src/main/resources/schema-sharding.sql:/docker-entrypoint-initdb.d/01-schema-sharding.sql:ro
+      - mysql_data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    networks:
+      - choutuan-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: choutuan-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - choutuan-net
+
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: choutuan-nacos
+    restart: unless-stopped
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    environment:
+      MODE: standalone
+      JVM_XMS: 512m
+      JVM_XMX: 512m
+    networks:
+      - choutuan-net
+
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.1.4
+    container_name: choutuan-rmq-namesrv
+    restart: unless-stopped
+    ports:
+      - "9876:9876"
+    command: sh mqnamesrv
+    environment:
+      MAX_POSSIBLE_HEAP: 256m
+    networks:
+      - choutuan-net
+
+  rocketmq-broker:
+    image: apache/rocketmq:5.1.4
+    container_name: choutuan-rmq-broker
+    restart: unless-stopped
+    depends_on:
+      - rocketmq-namesrv
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    environment:
+      NAMESRV_ADDR: rocketmq-namesrv:9876
+      MAX_POSSIBLE_HEAP: 512m
+    command: sh mqbroker -n rocketmq-namesrv:9876 --enable-proxy
+    networks:
+      - choutuan-net
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  choutuan-net:
+    driver: bridge
