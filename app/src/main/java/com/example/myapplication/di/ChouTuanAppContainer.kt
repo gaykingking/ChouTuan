@@ -13,14 +13,9 @@ class InMemoryChouTuanRoomDao : ChouTuanRoomDao {
     private val tenants = mutableListOf<TenantRoomEntity>()
     private val orders = mutableListOf<OrderRoomEntity>()
 
-    override suspend fun getTenants(channel: String): List<TenantRoomEntity> {
-        return if (channel == "全部") tenants.toList()
-        else tenants.filter { it.channelCategory == channel }
-    }
-
-    suspend fun upsertTenants(tenants: List<TenantRoomEntity>) {
-        this.tenants.clear()
-        this.tenants.addAll(tenants)
+    override suspend fun insertTenant(tenant: TenantRoomEntity) {
+        tenants.removeAll { it.tenantId == tenant.tenantId }
+        tenants.add(tenant)
     }
 
     override suspend fun insertOrder(order: OrderRoomEntity) {
@@ -28,11 +23,20 @@ class InMemoryChouTuanRoomDao : ChouTuanRoomDao {
         orders.add(0, order)
     }
 
-    suspend fun updateOrderStatus(orderId: String, status: String) {
-        val idx = orders.indexOfFirst { it.orderId == orderId }
-        if (idx >= 0) {
-            orders[idx] = orders[idx].copy(status = status)
+    override suspend fun getOrdersByTenant(tenantId: String): List<OrderRoomEntity> {
+        return orders.filter { it.tenantId == tenantId }
+    }
+
+    override suspend fun closeExpiredOrders(currentTimeMillis: Long): Int {
+        var count = 0
+        for (i in orders.indices) {
+            val order = orders[i]
+            if (order.expireTimestampMillis <= currentTimeMillis && order.status != "EXPIRED_CLOSED") {
+                orders[i] = order.copy(status = "EXPIRED_CLOSED")
+                count++
+            }
         }
+        return count
     }
 }
 
