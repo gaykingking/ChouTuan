@@ -58,3 +58,4 @@ object TransparentPricingEngine {
             otherCommissionRate = otherCommissionRate
         )
     }
+}
