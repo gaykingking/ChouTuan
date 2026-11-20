@@ -48,7 +48,7 @@ class ChouTuanRepository(
         appendLog("[Repository] 订单 ${order.orderId} 已写入 Room，超时关单=${timeoutMinutes}分钟")
     }
 
-    private fun appendLog(msg: String) {
+    fun appendLog(msg: String) {
         _diagnosticsLogs.value = (_diagnosticsLogs.value + msg).takeLast(50)
     }
 }
