@@ -24,8 +24,15 @@ class ChouTuanRepository(
 
     suspend fun syncTenants(channel: String): DataResult<List<TenantRoomEntity>> {
         return try {
-            val cached = localDao?.getTenants(channel).orEmpty()
-            appendLog("[Repository] 读取 Room 本地租户缓存 (${cached.size} 条), 频道=$channel")
+            val defaultTenant = TenantRoomEntity(
+                tenantId = channel,
+                tenantName = channel,
+                isActive = true
+            )
+            localDao?.insertTenant(defaultTenant)
+            val cachedOrders = localDao?.getOrdersByTenant(channel).orEmpty()
+            val cached = listOf(defaultTenant)
+            appendLog("[Repository] 已同步租户 ${defaultTenant.tenantId} 至 Room，关联订单 ${cachedOrders.size} 条，频道=$channel")
             DataResult.Success(cached, fromCache = true)
         } catch (e: Exception) {
             appendLog("[Repository] 同步租户异常: ${e.message}")
@@ -34,12 +41,14 @@ class ChouTuanRepository(
     }
 
     suspend fun cacheOrderWithTimeout(order: OrderRoomEntity, timeoutMinutes: Int = 15) {
-        val expireAt = System.currentTimeMillis() + timeoutMinutes * 60_000L
+        val now = System.currentTimeMillis()
+        val expireAt = now + timeoutMinutes * 60_000L
         localDao?.insertOrder(order.copy(expireTimestampMillis = expireAt))
+        localDao?.closeExpiredOrders(now)
         appendLog("[Repository] 订单 ${order.orderId} 已写入 Room，超时关单=${timeoutMinutes}分钟")
     }
 
-    fun appendLog(entry: String) {
-        _diagnosticsLogs.value = (listOf(entry) + _diagnosticsLogs.value).take(50)
+    private fun appendLog(msg: String) {
+        _diagnosticsLogs.value = (_diagnosticsLogs.value + msg).takeLast(50)
     }
 }
