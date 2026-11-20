@@ -163,7 +163,7 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
                     1 -> GroupBuyVoucherScreen(
                         deals = uiState.toGroupDealCards(),
                         vouchers = uiState.toGroupVoucherCards(),
-                        onBuyDeal = { deal -> viewModel.onIntent(ChouTuanIntent.BuyGroupDeal(deal.id)); voiceManager.broadcastMerchantOrder("下单支付成功，套餐编号 ${deal.id}", 0.0) }
+                        onBuyDeal = { deal -> viewModel.onIntent(ChouTuanIntent.BuyGroupDeal(deal.id)); voiceManager.broadcastMerchantOrder() }
                     )
 
                     2 -> OrderRadarTrackScreen(
@@ -179,17 +179,17 @@ fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
                         orders = uiState.toMerchantOrderCards(),
                         products = uiState.toMerchantProductCards(),
                         onSelectTenant = { viewModel.onIntent(ChouTuanIntent.SelectMerchantTenant(it)) },
-                        onRedeemVoucher = { viewModel.onIntent(ChouTuanIntent.RedeemVoucher(it)); voiceBroadcastManager?.broadcastMerchantOrder(); appContainer.repository.appendLog("[TTS] 商家核销团购券($it)触发真机语音播报") },
+                        onRedeemVoucher = { viewModel.onIntent(ChouTuanIntent.RedeemVoucher(it)); voiceBroadcastManager?.broadcastMerchantOrder() },
                         onOpenAddProduct = { viewModel.onIntent(ChouTuanIntent.ToggleAddProductDialog(true)) },
                         onToggleProductAvailability = {
                             viewModel.onIntent(ChouTuanIntent.ToggleProductAvailability(it))
                         },
-                        onAcceptOrder = { viewModel.onIntent(ChouTuanIntent.AcceptOrder(it)) ; voiceBroadcastManager?.broadcastMerchantOrder(); appContainer.repository.appendLog("[TTS] 商家点击接单($it)触发真机语音播报" }) }                    )
+                        onAcceptOrder = { viewModel.onIntent(ChouTuanIntent.AcceptOrder(it)) ; voiceBroadcastManager?.broadcastMerchantOrder() }                    )
 
                     4 -> RiderDeliveryScreen(
                         tasks = uiState.toRiderTaskCards(),
                         onPickupOrder = { viewModel.onIntent(ChouTuanIntent.PickupOrder(it)) },
-                        onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)); voiceBroadcastManager?.broadcastRiderTask(); appContainer.repository.appendLog("[TTS] 骑手确认送达($it)触发真机语音播报") }
+                        onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)); voiceBroadcastManager?.broadcastRiderTask() }
                     )
 
                         5 -> OnboardingAndWithdrawScreen()
