@@ -16,7 +16,7 @@ class MerchantOnboardingAndWithdrawControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new MerchantOnboardingAndWithdrawController()).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new MerchantOnboardingAndWithdrawController()).setMessageConverters(new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter()).build();
     }
 
     @Test
