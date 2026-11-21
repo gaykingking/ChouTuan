@@ -1,40 +1,40 @@
 package com.example.myapplication
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.example.myapplication.sdk.VoiceBroadcastManager
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.di.ChouTuanAppContainer
 import com.example.myapplication.domain.model.TransparentBillBreakdown
+import com.example.myapplication.sdk.VoiceBroadcastManager
 import com.example.myapplication.ui.components.TransparentBillCard
 import com.example.myapplication.ui.screens.GroupBuyVoucherScreen
 import com.example.myapplication.ui.screens.GroupDealCardModel
@@ -52,26 +52,18 @@ import com.example.myapplication.ui.screens.RiderTaskCardModel
 import com.example.myapplication.ui.screens.SdkConsoleScreen
 import com.example.myapplication.ui.screens.UserChannelHomeScreen
 import com.example.myapplication.ui.state.ChouTuanIntent
-import com.example.myapplication.ui.state.ChouTuanUiState
 import com.example.myapplication.ui.viewmodel.ChouTuanViewModel
 
-/**
- * 丑团 ChouTuan v3.0 主入口
- * 基于 SOLID / 依赖倒置原则接入 ChouTuanAppContainer 与 6 大独立 Screen 模块
- */
 class MainActivity : ComponentActivity() {
     private val appContainer by lazy { ChouTuanAppContainer() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewModel = appContainer.createViewModel()
         setContent {
             MaterialTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val viewModel = remember { appContainer.createViewModel() }
-                    ChouTuanRootScreen(viewModel = viewModel)
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    ChouTuanMainShell(viewModel = viewModel)
                 }
             }
         }
@@ -80,241 +72,446 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChouTuanRootScreen(viewModel: ChouTuanViewModel) {
-    val uiState by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    var activeModuleIndex by remember { mutableIntStateOf(0) }
+private fun ChouTuanMainShell(
+    viewModel: ChouTuanViewModel
+) {
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
     val voiceManager = remember(context) { VoiceBroadcastManager(context) }
-        val voiceBroadcastManager: VoiceBroadcastManager? = voiceManager
-    
-    val moduleTitles = listOf("点单频道", "团购核销", "订单雷达", "商家工作台", "骑手配送", "入驻/提现", "SDK联调")
 
-    LaunchedEffect(uiState.toastMessage) {
-        val message = uiState.toastMessage
-        if (!message.isNullOrBlank()) {
-            snackbarHostState.showSnackbar(message)
-            viewModel.onIntent(ChouTuanIntent.DismissToast)
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var isMuted by remember { mutableStateOf(voiceManager.isMuted) }
+    var selectedTenantForBill by remember { mutableStateOf<HomeTenantCardModel?>(null) }
+    var activeBillPreview by remember { mutableStateOf<TransparentBillBreakdown?>(null) }
+
+    val homeTenants = remember {
+        mutableStateListOf(
+            HomeTenantCardModel(
+                tenantId = "tenant_food_1",
+                name = "大兴观音寺黄焖鸡米饭",
+                emoji = "🍲",
+                channelCategory = "美食",
+                rating = 4.9,
+                monthlySales = 1280,
+                deliveryTimeMinutes = 26,
+                distanceKm = 1.2,
+                riderFee = 4.0,
+                otherCommissionRate = 23,
+                avgSavedPerDish = 8.0
+            ),
+            HomeTenantCardModel(
+                tenantId = "tenant_mart_1",
+                name = "首座御园 24h 便利超市",
+                emoji = "🛒",
+                channelCategory = "超市便利",
+                rating = 4.8,
+                monthlySales = 940,
+                deliveryTimeMinutes = 19,
+                distanceKm = 0.6,
+                riderFee = 3.5,
+                otherCommissionRate = 20,
+                avgSavedPerDish = 5.5
+            ),
+            HomeTenantCardModel(
+                tenantId = "tenant_tea_1",
+                name = "观音寺手作鲜果茶",
+                emoji = "🧋",
+                channelCategory = "奶茶甜品",
+                rating = 4.9,
+                monthlySales = 2150,
+                deliveryTimeMinutes = 22,
+                distanceKm = 0.9,
+                riderFee = 3.0,
+                otherCommissionRate = 22,
+                avgSavedPerDish = 4.0
+            )
+        )
+    }
+
+    val groupDeals = remember {
+        mutableStateListOf(
+            GroupDealCardModel(
+                id = "deal_1",
+                shopName = "大兴观音寺黄焖鸡米饭",
+                title = "招牌黄焖鸡双人透明套餐",
+                storeOriginalValue = 68.0,
+                choutuanPrice = 49.9,
+                otherPlatformPrice = 62.0,
+                emoji = "🍲"
+            ),
+            GroupDealCardModel(
+                id = "deal_2",
+                shopName = "观音寺手作鲜果茶",
+                title = "鲜果茶双杯畅饮券",
+                storeOriginalValue = 36.0,
+                choutuanPrice = 24.9,
+                otherPlatformPrice = 32.0,
+                emoji = "🧋"
+            )
+        )
+    }
+
+    val groupVouchers = remember {
+        mutableStateListOf(
+            GroupVoucherCardModel(
+                code = "CT-8891-2026",
+                dealTitle = "招牌黄焖鸡双人透明套餐",
+                shopName = "大兴观音寺黄焖鸡米饭",
+                price = 49.9,
+                redeemed = false
+            )
+        )
+    }
+
+    val radarOrders = remember {
+        mutableStateListOf(
+            OrderRadarCardModel(
+                orderId = "ORD-20261121-01",
+                tenantName = "大兴观音寺黄焖鸡米饭",
+                statusLabel = "骑手配送中",
+                progress = 0.65f,
+                shopLatLabel = "门店: 观音寺北里",
+                riderPositionLabel = "骑手距您 420m",
+                userLatLabel = "送达: 首座御园 3号楼",
+                paymentChannel = "微信直连分账",
+                userPayTotal = 42.0,
+                merchantNetIncome = 37.6,
+                riderNetIncome = 4.0,
+                platformTechFee = 0.4,
+                isCompleted = false
+            )
+        )
+    }
+
+    val merchantTenants = remember {
+        mutableStateListOf(
+            MerchantTenantOptionModel(
+                tenantId = "tenant_food_1",
+                name = "大兴观音寺黄焖鸡米饭",
+                emoji = "🍲",
+                tenantTypeLabel = "餐饮外卖",
+                otherCommissionRate = 23
+            ),
+            MerchantTenantOptionModel(
+                tenantId = "tenant_mart_1",
+                name = "首座御园 24h 便利超市",
+                emoji = "🛒",
+                tenantTypeLabel = "即时零售",
+                otherCommissionRate = 20
+            )
+        )
+    }
+
+    val merchantOrders = remember {
+        mutableStateListOf(
+            MerchantOrderCardModel(
+                orderId = "ORD-20261121-01",
+                merchantNetIncome = 37.6,
+                statusLabel = "待接单",
+                isPendingAccept = true
+            ),
+            MerchantOrderCardModel(
+                orderId = "ORD-20261121-02",
+                merchantNetIncome = 54.2,
+                statusLabel = "已出餐",
+                isPendingAccept = false
+            )
+        )
+    }
+
+    val merchantProducts = remember {
+        mutableStateListOf(
+            MerchantProductCardModel(
+                productId = "prod_1",
+                name = "招牌黄焖鸡大份(微辣)",
+                emoji = "🍲",
+                storePrice = 28.0,
+                otherPlatformPrice = 36.0,
+                isAvailable = true
+            ),
+            MerchantProductCardModel(
+                productId = "prod_2",
+                name = "秘制香辣排骨煲",
+                emoji = "🍖",
+                storePrice = 38.0,
+                otherPlatformPrice = 48.0,
+                isAvailable = true
+            )
+        )
+    }
+
+    val riderTasks = remember {
+        mutableStateListOf(
+            RiderTaskCardModel(
+                orderId = "ORD-20261121-01",
+                tenantName = "大兴观音寺黄焖鸡米饭",
+                shopLatLabel = "观音寺北里底商 108号",
+                userLatLabel = "首座御园 3号楼 1202室",
+                riderNetIncome = 6.5,
+                statusLabel = "待抢单",
+                isWaitingGrab = true,
+                isCompleted = false
+            )
+        )
+    }
+
+    val filteredTenants = remember(homeTenants.toList(), uiState.selectedChannel, uiState.searchQuery) {
+        homeTenants.filter { tenant ->
+            val matchChannel = uiState.selectedChannel == "全部" || tenant.channelCategory == uiState.selectedChannel
+            val matchQuery = uiState.searchQuery.isBlank() ||
+                tenant.name.contains(uiState.searchQuery, ignoreCase = true) ||
+                tenant.channelCategory.contains(uiState.searchQuery, ignoreCase = true)
+            matchChannel && matchQuery
         }
     }
 
+    val roleOptions = listOf(
+        "USER" to "用户端",
+        "MERCHANT" to "商家端(多租户)",
+        "RIDER" to "骑手端"
+    )
+
+    val userTabs = listOf("点单频道", "团购核销", "订单雷达", "入驻/提现", "SDK联调")
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text("丑团 ChouTuan v3.0", fontWeight = FontWeight.Bold)
-                        Text(
-                            text = "0抽佣 · 全透明账单 · SOLID 架构闭环",
-                            style = MaterialTheme.typography.labelSmall
+            Column {
+                TopAppBar(
+                    title = { Text("臭团 ChouTuan · 0佣金透明外卖") }
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    roleOptions.forEach { (roleKey, roleLabel) ->
+                        FilterChip(
+                            selected = uiState.activeRoleName == roleKey,
+                            onClick = { viewModel.onIntent(ChouTuanIntent.SwitchRole(roleKey)) },
+                            label = { Text(roleLabel) }
                         )
                     }
                 }
-            )
+            }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         bottomBar = {
-            NavigationBar {
-                moduleTitles.forEachIndexed { index, title ->
-                    NavigationBarItem(
-                        selected = activeModuleIndex == index,
-                        onClick = { activeModuleIndex = index },
-                        icon = { Text("${index + 1}") },
-                        label = { Text(title, maxLines = 1) }
-                    )
+            if (uiState.activeRoleName == "USER") {
+                NavigationBar {
+                    userTabs.forEachIndexed { index, label ->
+                        NavigationBarItem(
+                            selected = selectedTabIndex == index,
+                            onClick = { selectedTabIndex = index },
+                            icon = { Text(label.take(1)) },
+                            label = { Text(label) }
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
-        Column(
+        Surface(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 顶部快捷账单透明化预览卡片（存在购物车商品时展示）
-            if (uiState.cart.isNotEmpty()) {
-                val sampleBreakdown = TransparentBillBreakdown(
-                    storeGoodsTotal = uiState.cart.values.sum() * 18.0,
-                    riderDeliveryFee = 3.5,
-                    platformTechFee = 0.0,
-                    merchantNetIncome = uiState.cart.values.sum() * 18.0,
-                    riderNetIncome = 3.5,
-                    userPayTotal = uiState.cart.values.sum() * 18.0 + 3.5,
-                    savedVsOtherPlatform = uiState.cart.values.sum() * 4.5
-                )
-                Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
-                    TransparentBillCard(breakdown = sampleBreakdown)
-                }
-            }
-
-            // 6 大独立 Screen 模块路由分发
-            Box(modifier = Modifier.weight(1f)) {
-                when (activeModuleIndex) {
-                    0 -> UserChannelHomeScreen(
-                        tenants = uiState.toHomeTenantCards(),
-                        address = uiState.userAddress,
-                        searchQuery = uiState.searchQuery,
-                        selectedChannel = uiState.selectedChannel,
-                        onSearchChange = { viewModel.onIntent(ChouTuanIntent.UpdateSearchQuery(it)) },
-                        onChannelSelect = { viewModel.onIntent(ChouTuanIntent.SelectChannel(it)) },
-                        onShopClick = { viewModel.onIntent(ChouTuanIntent.SelectTenant(it)) }
-                    )
-
-                    1 -> GroupBuyVoucherScreen(
-                        deals = uiState.toGroupDealCards(),
-                        vouchers = uiState.toGroupVoucherCards(),
-                        onBuyDeal = { deal -> viewModel.onIntent(ChouTuanIntent.BuyGroupDeal(deal.id)); voiceManager.broadcastMerchantOrder() }
-                    )
-
-                    2 -> OrderRadarTrackScreen(
-                        orders = uiState.toOrderRadarCards(),
-                        onAdvanceStatus = { orderId ->
-                            viewModel.onIntent(ChouTuanIntent.AdvanceOrderStatus(orderId))
+            when (uiState.activeRoleName) {
+                "MERCHANT" -> {
+                    MerchantWorkspaceScreen(
+                        tenants = merchantTenants,
+                        activeTenantId = uiState.activeTenantId,
+                        orders = merchantOrders,
+                        products = merchantProducts,
+                        isMuted = isMuted,
+                        onSelectTenant = { tenantId ->
+                            viewModel.onIntent(ChouTuanIntent.SwitchMerchantTenant(tenantId))
+                        },
+                        onToggleMute = {
+                            isMuted = voiceManager.toggleMute()
+                        },
+                        onToggleProductStock = { product ->
+                            val idx = merchantProducts.indexOfFirst { it.productId == product.productId }
+                            if (idx >= 0) {
+                                merchantProducts[idx] = product.copy(isAvailable = !product.isAvailable)
+                            }
+                        },
+                        onAcceptOrder = { order ->
+                            val idx = merchantOrders.indexOfFirst { it.orderId == order.orderId }
+                            if (idx >= 0) {
+                                merchantOrders[idx] = order.copy(statusLabel = "已接单备餐中", isPendingAccept = false)
+                                voiceManager.broadcastMerchantOrder(order.merchantNetIncome.toString())
+                            }
                         }
                     )
+                }
 
-                    3 -> MerchantWorkspaceScreen(
-                        tenants = uiState.toMerchantTenantOptions(),
-                        activeTenantId = uiState.activeMerchantTenantId,
-                        orders = uiState.toMerchantOrderCards(),
-                        products = uiState.toMerchantProductCards(),
-                        onSelectTenant = { viewModel.onIntent(ChouTuanIntent.SelectMerchantTenant(it)) },
-                        onRedeemVoucher = { viewModel.onIntent(ChouTuanIntent.RedeemVoucher(it)); voiceBroadcastManager?.broadcastMerchantOrder() },
-                        onOpenAddProduct = { viewModel.onIntent(ChouTuanIntent.ToggleAddProductDialog(true)) },
-                        onToggleProductAvailability = {
-                            viewModel.onIntent(ChouTuanIntent.ToggleProductAvailability(it))
+                "RIDER" -> {
+                    RiderDeliveryScreen(
+                        tasks = riderTasks,
+                        onGrabTask = { task ->
+                            val idx = riderTasks.indexOfFirst { it.orderId == task.orderId }
+                            if (idx >= 0) {
+                                riderTasks[idx] = task.copy(statusLabel = "已抢单取餐中", isWaitingGrab = false)
+                            }
                         },
-                        onAcceptOrder = { viewModel.onIntent(ChouTuanIntent.AcceptOrder(it)) ; voiceBroadcastManager?.broadcastMerchantOrder() }                    )
-
-                    4 -> RiderDeliveryScreen(
-                        tasks = uiState.toRiderTaskCards(),
-                        onPickupOrder = { viewModel.onIntent(ChouTuanIntent.PickupOrder(it)) },
-                        onCompleteDelivery = { viewModel.onIntent(ChouTuanIntent.CompleteDelivery(it)); voiceBroadcastManager?.broadcastRiderTask() }
+                        onAdvanceTask = { task ->
+                            val idx = riderTasks.indexOfFirst { it.orderId == task.orderId }
+                            if (idx >= 0) {
+                                riderTasks[idx] = task.copy(statusLabel = "已送达", isCompleted = true)
+                            }
+                        }
                     )
+                }
 
-                        5 -> OnboardingAndWithdrawScreen()
+                else -> {
+                    when (selectedTabIndex) {
+                        0 -> UserChannelHomeScreen(
+                            selectedChannel = uiState.selectedChannel,
+                            searchQuery = uiState.searchQuery,
+                            deliveryAddress = uiState.deliveryAddress,
+                            tenants = filteredTenants,
+                            onChannelSelect = { channel ->
+                                viewModel.onIntent(ChouTuanIntent.SelectChannel(channel))
+                            },
+                            onSearchQueryChange = { query ->
+                                viewModel.onIntent(ChouTuanIntent.UpdateSearchQuery(query))
+                            },
+                            onAddressClick = {
+                                Toast.makeText(context, "当前地址: ${uiState.deliveryAddress}", Toast.LENGTH_SHORT).show()
+                            },
+                            onTenantClick = { tenant ->
+                                val bill = viewModel.previewTransparentBill(
+                                    items = listOf(Triple(38.0, 38.0, 1)),
+                                    otherPrices = listOf(Pair(46.0, 1)),
+                                    riderFee = tenant.riderFee,
+                                    otherCommissionRate = tenant.otherCommissionRate
+                                )
+                                selectedTenantForBill = tenant
+                                activeBillPreview = bill
+                            }
+                        )
 
-                    else -> SdkConsoleScreen(
-                        address = uiState.userAddress,
-                        baseUrl = uiState.baseUrl,
-                        amapKey = uiState.amapKey,
-                        sdkLogs = uiState.sdkLogs,
-                        onAddressChange = { viewModel.onIntent(ChouTuanIntent.UpdateAddress(it)) },
-                        onBaseUrlChange = { viewModel.onIntent(ChouTuanIntent.UpdateBaseUrl(it)) },
-                        onAmapKeyChange = { viewModel.onIntent(ChouTuanIntent.UpdateAmapKey(it)) },
-                        onSimulatePing = { viewModel.onIntent(ChouTuanIntent.SimulateSdkPing) }
-                    )
+                        1 -> GroupBuyVoucherScreen(
+                            deals = groupDeals,
+                            vouchers = groupVouchers,
+                            onBuyDeal = { deal ->
+                                val newCode = "CT-${(1000..9999).random()}-2026"
+                                groupVouchers.add(
+                                    0,
+                                    GroupVoucherCardModel(
+                                        code = newCode,
+                                        dealTitle = deal.title,
+                                        shopName = deal.shopName,
+                                        price = deal.choutuanPrice,
+                                        redeemed = false
+                                    )
+                                )
+                                Toast.makeText(context, "已购券: $newCode", Toast.LENGTH_SHORT).show()
+                            },
+                            onRedeemVoucher = { voucher ->
+                                val idx = groupVouchers.indexOfFirst { it.code == voucher.code }
+                                if (idx >= 0 && !voucher.redeemed) {
+                                    groupVouchers[idx] = voucher.copy(redeemed = true)
+                                    viewModel.onIntent(ChouTuanIntent.RedeemVoucher(voucher.code))
+                                    Toast.makeText(context, "核销成功: ${voucher.code}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+
+                        2 -> OrderRadarTrackScreen(
+                            orders = radarOrders,
+                            onAdvanceOrder = { order ->
+                                val idx = radarOrders.indexOfFirst { it.orderId == order.orderId }
+                                if (idx >= 0 && !order.isCompleted) {
+                                    val nextProgress = (order.progress + 0.35f).coerceAtMost(1.0f)
+                                    val done = nextProgress >= 1.0f
+                                    radarOrders[idx] = order.copy(
+                                        progress = nextProgress,
+                                        statusLabel = if (done) "已送达" else "骑手即将到达",
+                                        riderPositionLabel = if (done) "已送达指定位置" else "距您 100m",
+                                        isCompleted = done
+                                    )
+                                }
+                            }
+                        )
+
+                        3 -> OnboardingAndWithdrawScreen(
+                            onSubmitOnboarding = { storeName, phone, city ->
+                                Toast.makeText(context, "已提交入驻申请: $storeName ($city $phone)", Toast.LENGTH_SHORT).show()
+                            },
+                            onRequestWithdraw = { amountText ->
+                                Toast.makeText(context, "已发起提现申请: ¥$amountText", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+
+                        else -> SdkConsoleScreen(
+                            isOfflineMode = uiState.isOfflineFallBackMode,
+                            sdkLogs = uiState.sdkLogs,
+                            onSimulateVoiceBroadcast = {
+                                voiceManager.broadcastMerchantOrder("42.0")
+                            },
+                            onLocateClick = {
+                                Toast.makeText(context, "定位刷新: ${uiState.deliveryAddress}", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
                 }
             }
         }
     }
+
+    val billToShow = activeBillPreview
+    val tenantToShow = selectedTenantForBill
+    if (billToShow != null && tenantToShow != null) {
+        AlertDialog(
+            onDismissRequest = {
+                activeBillPreview = null
+                selectedTenantForBill = null
+            },
+            title = { Text("${tenantToShow.emoji} ${tenantToShow.name} · 透明账单") },
+            text = {
+                TransparentBillCard(breakdown = billToShow)
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        radarOrders.add(
+                            0,
+                            OrderRadarCardModel(
+                                orderId = "ORD-${(1000..9999).random()}",
+                                tenantName = tenantToShow.name,
+                                statusLabel = "已下单待接单",
+                                progress = 0.15f,
+                                shopLatLabel = "门店: ${tenantToShow.name}",
+                                riderPositionLabel = "等待骑手接单",
+                                userLatLabel = "送达: ${uiState.deliveryAddress}",
+                                paymentChannel = "微信直连分账",
+                                userPayTotal = 38.0 + tenantToShow.riderFee,
+                                merchantNetIncome = 38.0,
+                                riderNetIncome = tenantToShow.riderFee,
+                                platformTechFee = 0.4,
+                                isCompleted = false
+                            )
+                        )
+                        activeBillPreview = null
+                        selectedTenantForBill = null
+                        selectedTabIndex = 2
+                        Toast.makeText(context, "下单成功，已跳转订单雷达", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Text("确认透明下单")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        activeBillPreview = null
+                        selectedTenantForBill = null
+                    }
+                ) {
+                    Text("关闭")
+                }
+            }
+        )
+    }
 }
-
-private fun ChouTuanUiState.toHomeTenantCards(): List<HomeTenantCardModel> =
-    tenants.map {
-        HomeTenantCardModel(
-            tenantId = it.id,
-            name = it.name,
-            emoji = it.emoji,
-            channelCategory = it.channelCategory,
-            rating = it.rating,
-            monthlySales = it.monthlySales,
-            deliveryTimeMinutes = it.deliveryTimeMinutes,
-            distanceKm = it.distanceKm,
-            riderFee = it.riderFee,
-            otherCommissionRate = it.otherCommissionRate,
-            avgSavedPerDish = it.avgSavedPerDish
-        )
-    }
-
-private fun ChouTuanUiState.toGroupDealCards(): List<GroupDealCardModel> =
-    groupDeals.map {
-        GroupDealCardModel(
-            id = it.id,
-            shopName = it.shopName,
-            title = it.title,
-            storeOriginalValue = it.storeOriginalValue,
-            choutuanPrice = it.choutuanPrice,
-            otherPlatformPrice = it.otherPlatformPrice,
-            emoji = it.emoji
-        )
-    }
-
-private fun ChouTuanUiState.toGroupVoucherCards(): List<GroupVoucherCardModel> =
-    vouchers.map {
-        GroupVoucherCardModel(
-            code = it.code,
-            dealTitle = it.dealTitle,
-            shopName = it.shopName,
-            price = it.price,
-            redeemed = it.redeemed
-        )
-    }
-
-private fun ChouTuanUiState.toOrderRadarCards(): List<OrderRadarCardModel> =
-    orders.map {
-        OrderRadarCardModel(
-            orderId = it.orderId,
-            tenantName = it.tenantName,
-            statusLabel = it.status.label,
-            progress = it.status.progress,
-            shopLatLabel = it.shopLatLabel,
-            riderPositionLabel = it.riderPositionLabel,
-            userLatLabel = it.userLatLabel,
-            paymentChannel = it.paymentChannel.label,
-            userPayTotal = it.bill.userPayTotal,
-            merchantNetIncome = it.bill.merchantNetIncome,
-            riderNetIncome = it.bill.riderNetIncome,
-            platformTechFee = it.bill.platformTechFee,
-            isCompleted = it.status.progress >= 1f
-        )
-    }
-
-private fun ChouTuanUiState.toMerchantTenantOptions(): List<MerchantTenantOptionModel> =
-    tenants.map {
-        MerchantTenantOptionModel(
-            tenantId = it.id,
-            name = it.name,
-            emoji = it.emoji,
-            tenantTypeLabel = it.channelCategory,
-            otherCommissionRate = it.otherCommissionRate
-        )
-    }
-
-private fun ChouTuanUiState.toMerchantOrderCards(): List<MerchantOrderCardModel> =
-    orders.filter { it.tenantId == activeMerchantTenantId }.map {
-        MerchantOrderCardModel(
-            orderId = it.orderId,
-            merchantNetIncome = it.bill.merchantNetIncome,
-            statusLabel = it.status.label,
-            isPendingAccept = it.status.progress < 0.3f
-        )
-    }
-
-private fun ChouTuanUiState.toMerchantProductCards(): List<MerchantProductCardModel> =
-    products.filter { it.tenantId == activeMerchantTenantId }.map {
-        MerchantProductCardModel(
-            productId = it.id,
-            name = it.name,
-            emoji = it.emoji,
-            storePrice = it.storePrice,
-            otherPlatformPrice = it.otherPlatformPrice,
-            isAvailable = it.isAvailable
-        )
-    }
-
-private fun ChouTuanUiState.toRiderTaskCards(): List<RiderTaskCardModel> =
-    orders.map {
-        RiderTaskCardModel(
-            orderId = it.orderId,
-            tenantName = it.tenantName,
-            tenantEmoji = "🛵",
-            tenantTypeLabel = "即时配送",
-            deliveryAddress = it.deliveryAddress,
-            riderNetIncome = it.bill.riderNetIncome,
-            statusLabel = it.status.label,
-            isPendingPickup = it.status.progress in 0.2f..0.45f,
-            isDelivering = it.status.progress in 0.46f..0.95f,
-            isCompleted = it.status.progress >= 1f
-        )
-    }
