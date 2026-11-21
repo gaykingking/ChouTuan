@@ -18,7 +18,7 @@ class MultiTenantHeaderInterceptor(
             .header(HEADER_TENANT_ID, tenantIdProvider())
             .header(HEADER_CLIENT_ROLE, clientRoleProvider())
             .header(HEADER_COMMISSION_POLICY, POLICY_ZERO_COMMISSION)
-            .method(original.method, original.body)
+            .method(original.method(), original.body())
             .build()
         return chain.proceed(request)
     }
