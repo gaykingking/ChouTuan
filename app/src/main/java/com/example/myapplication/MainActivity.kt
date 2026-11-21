@@ -247,7 +247,7 @@ private fun ChouTuanMainShell(
                 tenantName = "大兴观音寺黄焖鸡米饭",
                 tenantEmoji = "🥘",
                 tenantTypeLabel = "餐饮外卖租户",
-                deliveryAddress = address,
+                deliveryAddress = uiState.deliveryAddress,
                 riderNetIncome = 6.5,
                 statusLabel = "待抢单",
                 isPendingPickup = true,
@@ -329,10 +329,10 @@ private fun ChouTuanMainShell(
                         },
                        onRedeemVoucher = { code -> viewModel.onIntent(ChouTuanIntent.RedeemVoucher(code)) },
                         onOpenAddProduct = { },
-                        onToggleProductAvailability = {product ->
-                            val idx = merchantProducts.indexOfFirst { it.productId == product.productId }
+                        onToggleProductAvailability = { productId ->
+                            val idx = merchantProducts.indexOfFirst { it.productId == productId }
                             if (idx >= 0) {
-                                merchantProducts[idx] = product.copy(isAvailable = !product.isAvailable)
+                                merchantProducts[idx] = merchantProducts[idx].copy(isAvailable = !merchantProducts[idx].isAvailable)
                             }
                         },
                         onAcceptOrder = { orderId ->
@@ -412,9 +412,10 @@ private fun ChouTuanMainShell(
 
                         2 -> OrderRadarTrackScreen(
                             orders = radarOrders,
-                            onAdvanceOrder = { order ->
-                                val idx = radarOrders.indexOfFirst { it.orderId == order.orderId }
-                                if (idx >= 0 && !order.isCompleted) {
+                            onAdvanceStatus = { orderId ->
+                                val idx = radarOrders.indexOfFirst { it.orderId == orderId }
+                                if (idx >= 0 && !radarOrders[idx].isCompleted) {
+                                    val order = radarOrders[idx]
                                     val nextProgress = (order.progress + 0.35f).coerceAtMost(1.0f)
                                     val done = nextProgress >= 1.0f
                                     radarOrders[idx] = order.copy(
@@ -427,24 +428,17 @@ private fun ChouTuanMainShell(
                             }
                         )
 
-                        3 -> OnboardingAndWithdrawScreen(
-                            onSubmitOnboarding = { storeName, phone, city ->
-                                Toast.makeText(context, "已提交入驻申请: $storeName ($city $phone)", Toast.LENGTH_SHORT).show()
-                            },
-                            onRequestWithdraw = { amountText ->
-                                Toast.makeText(context, "已发起提现申请: ¥$amountText", Toast.LENGTH_SHORT).show()
-                            }
-                        )
+                        3 -> OnboardingAndWithdrawScreen()
 
                         else -> SdkConsoleScreen(
-                            isOfflineMode = uiState.isOfflineFallBackMode,
+                            address = uiState.deliveryAddress,
+                            baseUrl = "api.choutuan.local/v1",
+                            amapKey = "AMAP_KEY_CHOUTUAN",
                             sdkLogs = uiState.sdkLogs,
-                            onSimulateVoiceBroadcast = {
-                                voiceManager.broadcastMerchantOrder("42.0")
-                            },
-                            onLocateClick = {
-                                Toast.makeText(context, "定位刷新: ${uiState.deliveryAddress}", Toast.LENGTH_SHORT).show()
-                            }
+                            onAddressChange = {},
+                            onBaseUrlChange = {},
+                            onAmapKeyChange = {},
+                            onSimulatePing = {}
                         )
                     }
                 }
