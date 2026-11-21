@@ -245,11 +245,13 @@ private fun ChouTuanMainShell(
             RiderTaskCardModel(
                 orderId = "ORD-20261121-01",
                 tenantName = "大兴观音寺黄焖鸡米饭",
-                shopLatLabel = "观音寺北里底商 108号",
-                userLatLabel = "首座御园 3号楼 1202室",
+                tenantEmoji = "🥘",
+                tenantTypeLabel = "餐饮外卖租户",
+                deliveryAddress = address,
                 riderNetIncome = 6.5,
                 statusLabel = "待抢单",
-                isWaitingGrab = true,
+                isPendingPickup = true,
+                isDelivering = false,
                 isCompleted = false
             )
         )
@@ -322,22 +324,21 @@ private fun ChouTuanMainShell(
                         activeTenantId = uiState.activeTenantId,
                         orders = merchantOrders,
                         products = merchantProducts,
-                        isMuted = isMuted,
                         onSelectTenant = { tenantId ->
                             viewModel.onIntent(ChouTuanIntent.SwitchMerchantTenant(tenantId))
                         },
-                        onToggleMute = {
-                            isMuted = voiceManager.toggleMute()
-                        },
-                        onToggleProductStock = { product ->
+                       onRedeemVoucher = { code -> viewModel.onIntent(ChouTuanIntent.RedeemVoucher(code)) },
+                        onOpenAddProduct = { },
+                        onToggleProductAvailability = {product ->
                             val idx = merchantProducts.indexOfFirst { it.productId == product.productId }
                             if (idx >= 0) {
                                 merchantProducts[idx] = product.copy(isAvailable = !product.isAvailable)
                             }
                         },
-                        onAcceptOrder = { order ->
-                            val idx = merchantOrders.indexOfFirst { it.orderId == order.orderId }
+                        onAcceptOrder = { orderId ->
+                            val idx = merchantOrders.indexOfFirst { it.orderId == orderId }
                             if (idx >= 0) {
+                                val order = merchantOrders[idx]
                                 merchantOrders[idx] = order.copy(statusLabel = "已接单备餐中", isPendingAccept = false)
                                 voiceManager.broadcastMerchantOrder(order.merchantNetIncome.toString())
                             }
@@ -348,16 +349,16 @@ private fun ChouTuanMainShell(
                 "RIDER" -> {
                     RiderDeliveryScreen(
                         tasks = riderTasks,
-                        onGrabTask = { task ->
-                            val idx = riderTasks.indexOfFirst { it.orderId == task.orderId }
+                        onPickupOrder = { orderId ->
+                            val idx = riderTasks.indexOfFirst { it.orderId == orderId }
                             if (idx >= 0) {
-                                riderTasks[idx] = task.copy(statusLabel = "已抢单取餐中", isWaitingGrab = false)
+                                riderTasks[idx] = riderTasks[idx].copy(statusLabel = "已抢单取餐中", isPendingPickup = false, isDelivering = true)
                             }
                         },
-                        onAdvanceTask = { task ->
-                            val idx = riderTasks.indexOfFirst { it.orderId == task.orderId }
+                       onCompleteDelivery = { orderId ->
+                            val idx = riderTasks.indexOfFirst { it.orderId ==orderId }
                             if (idx >= 0) {
-                                riderTasks[idx] = task.copy(statusLabel = "已送达", isCompleted = true)
+                                riderTasks[idx] = riderTasks[idx].copy(statusLabel = "已送达", isDelivering = false, isCompleted = true)
                             }
                         }
                     )
@@ -368,18 +369,16 @@ private fun ChouTuanMainShell(
                         0 -> UserChannelHomeScreen(
                             selectedChannel = uiState.selectedChannel,
                             searchQuery = uiState.searchQuery,
-                            deliveryAddress = uiState.deliveryAddress,
+                            address= uiState.deliveryAddress,
                             tenants = filteredTenants,
                             onChannelSelect = { channel ->
                                 viewModel.onIntent(ChouTuanIntent.SelectChannel(channel))
                             },
-                            onSearchQueryChange = { query ->
+                            onSearchChange = { query ->
                                 viewModel.onIntent(ChouTuanIntent.UpdateSearchQuery(query))
                             },
-                            onAddressClick = {
-                                Toast.makeText(context, "当前地址: ${uiState.deliveryAddress}", Toast.LENGTH_SHORT).show()
-                            },
-                            onTenantClick = { tenant ->
+                           onShopClick = { tenantId ->
+                               homeTenants.find { it.tenantId == tenantId }?.let { tenant ->
                                 val bill = viewModel.previewTransparentBill(
                                     items = listOf(Triple(38.0, 38.0, 1)),
                                     otherPrices = listOf(Pair(46.0, 1)),
@@ -388,7 +387,8 @@ private fun ChouTuanMainShell(
                                 )
                                 selectedTenantForBill = tenant
                                 activeBillPreview = bill
-                            }
+                               }
+                           }
                         )
 
                         1 -> GroupBuyVoucherScreen(
@@ -407,15 +407,7 @@ private fun ChouTuanMainShell(
                                     )
                                 )
                                 Toast.makeText(context, "已购券: $newCode", Toast.LENGTH_SHORT).show()
-                            },
-                            onRedeemVoucher = { voucher ->
-                                val idx = groupVouchers.indexOfFirst { it.code == voucher.code }
-                                if (idx >= 0 && !voucher.redeemed) {
-                                    groupVouchers[idx] = voucher.copy(redeemed = true)
-                                    viewModel.onIntent(ChouTuanIntent.RedeemVoucher(voucher.code))
-                                    Toast.makeText(context, "核销成功: ${voucher.code}", Toast.LENGTH_SHORT).show()
-                                }
-                            }
+                         }
                         )
 
                         2 -> OrderRadarTrackScreen(
