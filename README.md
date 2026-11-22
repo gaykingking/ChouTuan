@@ -50,6 +50,9 @@
 | `backend-service/notification-service/src/main/java/com/choutuan/notification/NotificationServiceApplication.java` | **消息推送服务入口 (Spring Boot)** | `notification-service` 微服务 Spring Boot 启动类，启用 `@SpringBootApplication` 与 `@EnableDiscoveryClient` 注册服务 |
 | `backend-service/notification-service/src/main/java/com/choutuan/notification/config/WebSocketBrokerConfig.java` | **STOMP WebSocket 代理配置** | 注册 `/ws/choutuan` STOMP 端点，开启 `/topic/merchant` 与 `/topic/rider` 多租户语音播报订阅前缀 |
 | `.github/workflows/backend-ci.yml` | **后端 CI 自动编译流水线** | GitHub Actions 后端自动化构建脚本，在 `backend-service/**` 变更时使用 JDK 17 自动执行 `mvn -B -f backend-service/pom.xml clean package -DskipTests` 验证四大微服务全量编译通过 |
+| `app/src/main/java/com/example/myapplication/data/remote/RetrofitClientFactory.kt` | **网络工厂层 (Retrofit)** | 多租户 OkHttp3 拦截器与 Retrofit 客户端工厂，自动注入 `X-App-Id` / `X-Tenant-Id` / `X-Client-Role` 请求头并创建 `ChouTuanApiService` 实例 |
+| `backend-service/order-service/src/test/java/com/choutuan/order/MerchantOnboardingAndWithdrawControllerTest.java` | **订单服务单元测试 (JUnit 5)** | `order-service` 商家入驻 0% 抽成审核与秒级提现控制器单元测试 |
+| `backend-service/product-service/src/test/java/com/choutuan/product/TenantProductControllerTest.java` | **商品服务单元测试 (JUnit 5)** | `product-service` 多租户门店 LBS 距离检索与堂食同价竞品保本溢价测算单元测试 |
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
