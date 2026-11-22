@@ -49,10 +49,10 @@ class LocationAndSdkUnitTest {
     @Test
     fun retrofitClientFactory_createOkHttpClient_configuresTimeoutsAndInterceptor() {
         val client = RetrofitClientFactory.createOkHttpClient("T2026", "MERCHANT")
-        assertEquals(15_000, client.connectTimeoutMillis)
-        assertEquals(15_000, client.readTimeoutMillis)
-        assertEquals(15_000, client.writeTimeoutMillis)
-        assertTrue(client.interceptors.any { it is MultiTenantHeaderInterceptor })
+        assertEquals(15_000, client.connectTimeoutMillis())
+        assertEquals(15_000, client.readTimeoutMillis())
+        assertEquals(15_000, client.writeTimeoutMillis())
+        assertTrue(client.interceptors().any { it is MultiTenantHeaderInterceptor })
     }
 
     @Test
