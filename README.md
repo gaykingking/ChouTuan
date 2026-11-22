@@ -53,6 +53,10 @@
 | `app/src/main/java/com/example/myapplication/data/remote/RetrofitClientFactory.kt` | **网络工厂层 (Retrofit)** | 多租户 OkHttp3 拦截器与 Retrofit 客户端工厂，自动注入 `X-App-Id` / `X-Tenant-Id` / `X-Client-Role` 请求头并创建 `ChouTuanApiService` 实例 |
 | `backend-service/order-service/src/test/java/com/choutuan/order/MerchantOnboardingAndWithdrawControllerTest.java` | **订单服务单元测试 (JUnit 5)** | `order-service` 商家入驻 0% 抽成审核与秒级提现控制器单元测试 |
 | `backend-service/product-service/src/test/java/com/choutuan/product/TenantProductControllerTest.java` | **商品服务单元测试 (JUnit 5)** | `product-service` 多租户门店 LBS 距离检索与堂食同价竞品保本溢价测算单元测试 |
+| `app/src/test/java/com/example/myapplication/LocationAndSdkUnitTest.kt` | **Android 端单元测试 (JUnit 4)** | 验证高德球面距离计算（`AMapSphericalUtils`）、多租户请求头拦截器与客户端 SDK 核心逻辑 |
+| `backend-service/gateway-service/src/test/java/com/choutuan/gateway/filter/MultiTenantGatewayFilterTest.java` | **网关服务单元测试 (JUnit 5)** | `gateway-service` 多租户全局路由过滤、`X-Tenant-Id` 透传与越权拦截单元测试 |
+| `backend-service/notification-service/src/test/java/com/choutuan/notification/RiderMerchantPushConsumerTest.java` | **消息推送服务单元测试 (JUnit 5)** | `notification-service` 验证 `ORDER_CREATED` / `MERCHANT_ACCEPTED_ZERO_COMMISSION` / `RIDER_DELIVERED_FULL_FEE` 多租户语音播报推送 |
+| `Makefile` | **全栈一键运维脚本** | 提供 `dev-up` / `dev-down`、`backend-test`、`android-test` / `android-apk`、`docker-build` 与 `k3s-deploy` 一键命令 
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
