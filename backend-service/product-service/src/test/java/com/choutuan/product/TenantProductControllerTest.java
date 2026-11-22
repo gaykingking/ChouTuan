@@ -70,6 +70,6 @@ class TenantProductControllerTest {
                 .andExpect(jsonPath("$.data.samePriceAsDineIn").value(true))
                 .andExpect(jsonPath("$.data.competitorBreakEvenPrice").value(100.0))
                 .andExpect(jsonPath("$.data.competitorBreakEvenPremiumAmount").value(23.0))
-                .andExpect(jsonPath("$.data.competitorBreakEvenPremiumPercent").value(29.87));
+                .andExpect(jsonPath("$.data.competitorBreakEvenPremiumPercent").value("29.87%"));
     }
 }
