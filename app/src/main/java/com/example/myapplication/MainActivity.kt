@@ -47,6 +47,7 @@ import com.example.myapplication.ui.screens.MerchantWorkspaceScreen
 import com.example.myapplication.ui.screens.OnboardingAndWithdrawScreen
 import com.example.myapplication.ui.screens.OrderRadarCardModel
 import com.example.myapplication.ui.screens.OrderRadarTrackScreen
+import com.example.myapplication.ui.screens.RevenueAnalyticsScreen
 import com.example.myapplication.ui.screens.RiderDeliveryScreen
 import com.example.myapplication.ui.screens.RiderTaskCardModel
 import com.example.myapplication.ui.screens.SdkConsoleScreen
@@ -319,7 +320,14 @@ private fun ChouTuanMainShell(
         ) {
             when (uiState.activeRoleName) {
                 "MERCHANT" -> {
-                    MerchantWorkspaceScreen(
+                    var showMerchantAnalytics by remember { mutableStateOf(false) }
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    FilterChip(selected = !showMerchantAnalytics, onClick = { showMerchantAnalytics = false }, label = { Text("工作台") })
+                                    FilterChip(selected = showMerchantAnalytics, onClick = { showMerchantAnalytics = true }, label = { Text("7日收益报表") })
+                        }
+                          if (showMerchantAnalytics) { RevenueAnalyticsScreen() } else {
+                   MerchantWorkspaceScreen(
                         tenants = merchantTenants,
                         activeTenantId = uiState.activeTenantId,
                         orders = merchantOrders,
@@ -344,6 +352,8 @@ private fun ChouTuanMainShell(
                             }
                         }
                     )
+                          }
+                    }
                 }
 
                 "RIDER" -> {
