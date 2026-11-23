@@ -55,6 +55,7 @@ import com.example.myapplication.ui.screens.SdkConsoleScreen
 import com.example.myapplication.ui.screens.UserChannelHomeScreen
 import com.example.myapplication.ui.state.ChouTuanIntent
 import com.example.myapplication.ui.viewmodel.ChouTuanViewModel
+import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
     private val appContainer by lazy { ChouTuanAppContainer() }
@@ -63,9 +64,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val viewModel = appContainer.createViewModel()
         setContent {
-            MaterialTheme {
+val themePrefs = remember { getSharedPreferences("choutuan_theme_prefs", Context.MODE_PRIVATE) }
+var isDarkTheme by remember { mutableStateOf(themePrefs.getBoolean("dark_theme", false)) }
+           MyApplicationTheme(darkTheme = isDarkTheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    ChouTuanMainShell(viewModel = viewModel)
+                    ChouTuanMainShell(viewModel = viewModel, isDarkTheme = isDarkTheme, onToggleDarkTheme = { val next = !isDarkTheme; isDarkTheme = next; themePrefs.edit().putBoolean("dark_theme", next).apply() })
                 }
             }
         }
@@ -75,7 +78,9 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChouTuanMainShell(
-    viewModel: ChouTuanViewModel
+    viewModel: ChouTuanViewModel,
+isDarkTheme: Boolean,
+onToggleDarkTheme: () -> Unit
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -299,6 +304,9 @@ private fun ChouTuanMainShell(
                         ) {
                             Text(if (isMuted) "🔇 已静音" else "🔊 语音开")
                         }
+TextButton(onClick = onToggleDarkTheme) {
+    Text(if (isDarkTheme) "☀️" else "🌙")
+}
                     }
                 )
                 Row(
