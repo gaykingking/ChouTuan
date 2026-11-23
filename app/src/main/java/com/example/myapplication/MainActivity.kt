@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -78,7 +79,14 @@ private fun ChouTuanMainShell(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    val voiceManager = remember(context) { VoiceBroadcastManager(context) }
+    val voicePrefs = remember(context) {
+        context.getSharedPreferences("choutuan_voice_prefs", Context.MODE_PRIVATE)
+    }
+    val voiceManager = remember(context) {
+        VoiceBroadcastManager(context).apply {
+            setMuted(voicePrefs.getBoolean("voice_muted", false))
+        }
+    }
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var isMuted by remember { mutableStateOf(voiceManager.isMuted) }
@@ -280,7 +288,18 @@ private fun ChouTuanMainShell(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("臭团 ChouTuan · 0佣金透明外卖") }
+                    title = { Text("臭团 ChouTuan · 0佣金透明外卖") },
+                    actions = {
+                        TextButton(
+                            onClick = {
+                                voiceManager.toggleMute()
+                                isMuted = voiceManager.isMuted
+                                voicePrefs.edit().putBoolean("voice_muted", isMuted).apply()
+                            }
+                        ) {
+                            Text(if (isMuted) "🔇 已静音" else "🔊 语音开")
+                        }
+                    }
                 )
                 Row(
                     modifier = Modifier
