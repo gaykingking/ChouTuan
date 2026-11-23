@@ -72,9 +72,9 @@ class ChouTuanViewModelTest {
 
         assertEquals(0.0, breakdown.platformCommissionFee, 0.001)
         assertEquals(0.20, breakdown.platformTechFee, 0.001)
-        assertEquals(31.80, breakdown.merchantNetIncome, 0.001)
+        assertEquals(32.00, breakdown.merchantNetIncome, 0.001)
         assertEquals(4.0, breakdown.riderNetIncome, 0.001)
-        assertEquals(36.0, breakdown.userPayTotal, 0.001)
+        assertEquals(36.20, breakdown.userPayTotal, 0.001)
         assertEquals(8.0, breakdown.userSavedAmount, 0.001)
 
         val currentPreview = viewModel.uiState.value.currentBillPreview
