@@ -60,6 +60,10 @@
 | `app/src/main/java/com/example/myapplication/ui/screens/RevenueAnalyticsScreen.kt` | **7日收益可视化报表页 (Android)** | 展示商家近7日 0 抽成收益趋势、同行业抽成对比与省佣金额可视化图表 |
 | `backend-service/order-service/src/main/java/com/choutuan/order/RevenueAnalyticsController.java` | **7日收益统计控制器 (order-service)** | 提供多租户商家近7日 0 抽成收益与省佣对比统计查询接口 |
 | `backend-service/order-service/src/test/java/com/choutuan/order/RevenueAnalyticsControllerTest.java` | **7日收益统计单元测试 (JUnit 5)** | `order-service` 7日收益可视化统计与省佣对比计算控制器单元测试 |
+| `backend-service/order-service/src/main/java/com/choutuan/order/exception/GlobalExceptionHandler.java` | **全局异常拦截器（order-service）** | 统一拦截业务校验、参数绑定及系统异常并返回标准化错误响应结构 |
+| `backend-service/order-service/src/test/java/com/choutuan/order/exception/GlobalExceptionHandlerTest.java` | **全局异常拦截器单元测试（JUnit 5）** | 验证 `GlobalExceptionHandler` 对各类异常的状态码与错误响应体处理 |
+| `backend-service/order-service/src/main/java/com/choutuan/order/health/HealthCheckController.java` | **K3s 健康检查端点（order-service）** | 提供 `GET /order-service/api/v1/health` 健康探针接口，返回服务状态、`ZERO_COMMISSION` 政策与 `0.20` 固定通道费 |
+| `backend-service/order-service/src/test/java/com/choutuan/order/health/HealthCheckControllerTest.java` | **健康检查端点单元测试（JUnit 5）** | 使用 `MockMvc` 验证 `GET /order-service/api/v1/health` 返回 HTTP 200 及 `UP`、`ZERO_COMMISSION`、`0.20` 字段 |
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
