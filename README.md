@@ -74,6 +74,9 @@
 | `backend-service/gateway-service/src/test/java/com/choutuan/gateway/health/GatewayHealthControllerTest.java` | **健康检查端点单元测试 (gateway-service / JUnit 5)** | 直接调用 `new GatewayHealthController().health().block()` 验证返回 `UP`、`gateway-service`、`ZERO_COMMISSION` 与非空 `timestamp` |
 | `k8s/choutuan-k3s-hpa.yaml` | **K3s 高峰期 HPA 自动扩缩容清单** | 基于 `autoscaling/v2` 为 `gateway-service`、`product-service`、`order-service` 配置 CPU 利用率 70% 自动扩缩容（`minReplicas: 1`, `maxReplicas: 4`），适配午/晚高峰外卖流量波峰 | 
 | `k8s/choutuan-monitoring-rules.yaml` | **K3s Prometheus 监控告警清单** | 适配 K3s Prometheus + Grafana 监控体系的 `ServiceMonitor` 与 `PrometheusRule` 清单，覆盖 `choutuan-namespace` 四大微服务指标抓取及服务宕机、HTTP 5xx 异常率、午晚高峰 CPU 持续过载与 15 分钟延迟关单积压告警 |
+| `k8s/choutuan-grafana-dashboard.json` | **K3s Grafana 四大微服务监控大盘模板** | 可直接导入 Grafana 的 `schemaVersion: 38` 可视化监控模板，基于 Prometheus/Micrometer 指标展示四大微服务实时 QPS、HTTP 5xx 异常率、P99 接口响应延迟与 JVM 堆内存使用量，支持 `$application` 多微服务筛选 |
+| `backend-service/product-service/src/main/resources/application.yml` | **商品服务配置 (product-service)** | 配置 Nacos 服务注册发现、MySQL/Redis 连接以及 Spring Boot Actuator Prometheus 指标暴露（`/actuator/prometheus`），接入 K3s 监控体系 |
+| `backend-service/notification-service/src/main/resources/application.yml` | **消息推送服务配置 (notification-service)** | 配置 Nacos 服务注册发现、RocketMQ 消费与生产参数以及 Spring Boot Actuator Prometheus 指标暴露（`/actuator/prometheus`），接入 K3s 监控体系 |
 ## 运行方式
 1. 使用 Android  Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
