@@ -63,7 +63,19 @@ spec:
             limits:
               cpu: "500m"
               memory: "768Mi"
-      volumes:
+           readinessProbe:
+            httpGet:
+              path: /gateway/api/v1/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /gateway/api/v1/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+     volumes:
         - name: skywalking-agent
           emptyDir: {}
 ---
