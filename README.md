@@ -64,6 +64,10 @@
 | `backend-service/order-service/src/test/java/com/choutuan/order/exception/GlobalExceptionHandlerTest.java` | **全局异常拦截器单元测试（JUnit 5）** | 验证 `GlobalExceptionHandler` 对各类异常的状态码与错误响应体处理 |
 | `backend-service/order-service/src/main/java/com/choutuan/order/health/HealthCheckController.java` | **K3s 健康检查端点（order-service）** | 提供 `GET /order-service/api/v1/health` 健康探针接口，返回服务状态、`ZERO_COMMISSION` 政策与 `0.20` 固定通道费 |
 | `backend-service/order-service/src/test/java/com/choutuan/order/health/HealthCheckControllerTest.java` | **健康检查端点单元测试（JUnit 5）** | 使用 `MockMvc` 验证 `GET /order-service/api/v1/health` 返回 HTTP 200 及 `UP`、`ZERO_COMMISSION`、`0.20` 字段 |
+| `app/src/test/java/com/example/myapplication/ChouTuanViewModelTest.kt` | **Android ViewModel 单元测试 (JUnit 4)** | 验证 `ChouTuanViewModel` 透明账单试算、0 抽佣策略与状态流更新逻辑 |
+| `backend-service/product-service/src/main/java/com/choutuan/product/health/ProductHealthController.java` | **K3s 健康检查端点 (product-service)** | 提供 `GET /product-service/api/v1/health` 健康探针接口，返回服务状态、`ZERO_COMMISSION` 政策与 `0.20` 固定通道费 |
+| `backend-service/notification-service/src/main/java/com/choutuan/notification/health/NotificationHealthController.java` | **K3s 健康检查端点 (notification-service)** | 提供 `GET /notification-service/api/v1/health` 健康探针接口，返回服务状态、`ZERO_COMMISSION` 政策与 `0.20` 固定通道费 |
+| `backend-service/notification-service/src/test/java/com/choutuan/notification/health/NotificationHealthControllerTest.java` | **健康检查端点单元测试 (JUnit 5)** | 使用 `MockMvc` 验证 `GET /notification-service/api/v1/health` 返回 HTTP 200 及 `UP`、`ZERO_COMMISSION`、`0.20` 字段 |
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
