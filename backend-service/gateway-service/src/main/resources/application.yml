@@ -22,3 +22,11 @@ spring:
           uri: lb://notification-service
           predicates:
             - Path=/notification-service/**
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: gateway-service
