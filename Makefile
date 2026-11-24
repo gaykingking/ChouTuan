@@ -1,4 +1,4 @@
-.PHONY: help dev-up dev-down backend-test android-test android-apk docker-build k3s-deploy
+.PHONY: help dev-up dev-down backend-test android-test android-apk docker-build k3s-deploy k3s-status
 
 SERVICES := gateway-service order-service product-service notification-service
 IMAGE_PREFIX := choutuan
@@ -13,6 +13,7 @@ help:
 	@echo "  android-apk   Build Android debug APK"
 	@echo "  docker-build  Build Docker images for all 4 backend microservices"
 	@echo "  k3s-deploy    Deploy ChouTuan workloads to K3s cluster"
+	@echo "  k3s-status    Check ChouTuan Pods, Services and HPA status in K3s"
 
 dev-up:
 	docker compose -f backend-service/docker-compose.yml up -d
@@ -36,4 +37,8 @@ docker-build:
 	done
 
 k3s-deploy:
-	kubectl apply -f k8s/choutuan-k3s-deployment.yaml
+	kubectl apply -f k8s/choutuan-k3s-deployment.yaml 
+	kubectl apply -f k8s/choutuan-k3s-hpa.yaml
+	kubectl apply -f k8s/choutuan-monitoring-rules.yaml
+k3s-status:
+	kubectl get pods,svc,hpa -n choutuan-namespace
