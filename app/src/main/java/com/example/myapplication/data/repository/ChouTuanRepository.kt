@@ -4,6 +4,7 @@ import com.example.myapplication.data.local.ChouTuanRoomDao
 import com.example.myapplication.data.local.OrderRoomEntity
 import com.example.myapplication.data.local.TenantRoomEntity
 import com.example.myapplication.data.remote.ChouTuanApiService
+import com.example.myapplication.data.remote.NetworkRetryExecutor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,8 @@ sealed interface DataResult<out T> {
 
 class ChouTuanRepository(
     private val localDao: ChouTuanRoomDao?,
-    private val remoteApi: ChouTuanApiService?
+    private val remoteApi: ChouTuanApiService?,
+    private val retryExecutor: NetworkRetryExecutor = NetworkRetryExecutor()
 ) {
     private val _diagnosticsLogs = MutableStateFlow(
         listOf("[Repository] 已初始化 SOLID 离线优先多租户仓库")
@@ -51,4 +53,15 @@ class ChouTuanRepository(
     fun appendLog(msg: String) {
         _diagnosticsLogs.value = (_diagnosticsLogs.value + msg).takeLast(50)
     }
-}
+    suspend fun <T> executeWithRetry(
+        operationName: String,
+        block: suspend () -> T
+    ): DataResult<T> {
+        return try {
+            DataResult.Success(retryExecutor.execute(block = block))
+        } catch (e: Exception) {
+            appendLog("[Repository] $operationName failed after retries: ${e.message}")
+            DataResult.Error("$operationName failed: ${e.message}", e)
+        }
+    }
+}    
