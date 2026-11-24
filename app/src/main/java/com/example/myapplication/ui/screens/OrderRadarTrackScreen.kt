@@ -1,4 +1,5 @@
 package com.example.myapplication.ui.screens
+import androidx.compose.foundation.BorderStroke
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -34,14 +35,17 @@ data class OrderRadarCardModel(
     val merchantNetIncome: Double,
     val riderNetIncome: Double,
     val platformTechFee: Double,
-    val isCompleted: Boolean
+    val isCompleted: Boolean,
+    val remainingTimeoutMinutes: Int = 15,
+    val canCancel: Boolean = false
 )
 
 @Composable
 fun OrderRadarTrackScreen(
     orders: List<OrderRadarCardModel>,
     onAdvanceStatus: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCancelOrder: (String) -> Unit = {}
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -115,13 +119,20 @@ fun OrderRadarTrackScreen(
                         fontWeight = FontWeight.Bold
                     )
                     if (!order.isCompleted) {
+                    Spacer(Modifier.height(6.dp))
+                    Text("⏱️ RocketMQ 15分钟超时保障：剩余 ${order.remainingTimeoutMinutes} 分钟（超时自动 0 手续费全额退款）", fontSize = 11.sp, color = Color(0xFFB45309), fontWeight = FontWeight.Medium)
                         Spacer(Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    if (order.canCancel) {
+                    OutlinedButton(onClick = { onCancelOrder(order.orderId) }, border = BorderStroke(1.dp, Color(0xFFDC2626)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDC2626))) { Text("一键取消（0手续费全额退）", fontSize = 12.sp) }
+                       Spacer(Modifier.width(8.dp))
+                    }
                         OutlinedButton(
                             onClick = { onAdvanceStatus(order.orderId) },
-                            modifier = Modifier.align(Alignment.End)
                         ) {
                             Text("模拟推进配送轨迹", fontSize = 12.sp)
                         }
+                    }
                     }
                 }
             }
