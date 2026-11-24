@@ -1,0 +1,76 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: choutuan-microservices-monitor
+  namespace: choutuan-namespace
+  labels:
+    app.kubernetes.io/part-of: choutuan
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - choutuan-namespace
+  selector: {}
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: choutuan-microservices-alerts
+  namespace: choutuan-namespace
+  labels:
+    app.kubernetes.io/part-of: choutuan
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: choutuan.microservices.rules
+      rules:
+        - alert: ChouTuanServiceDown
+          expr: up{namespace="choutuan-namespace", service=~"gateway-service|product-service|order-service|notification-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "ChouTuan 微服务实例宕机 ({{ $labels.service }})"
+            description: "命名空间 choutuan-namespace 下的服务 {{ $labels.service }} 实例已失联超过 1 分钟。"
+
+        - alert: ChouTuanHighHttp5xxRate
+          expr: |
+            (
+              sum(rate(http_server_requests_seconds_count{namespace="choutuan-namespace", status=~"5.."}[5m])) by (service)
+              /
+              sum(rate(http_server_requests_seconds_count{namespace="choutuan-namespace"}[5m])) by (service)
+            ) > 0.05
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "ChouTuan 微服务 HTTP 5xx 异常率过高 ({{ $labels.service }})"
+            description: "服务 {{ $labels.service }} 最近 5 分钟 HTTP 5xx 错误率超过 5%，当前值: {{ $value | humanizePercentage }}。"
+
+        - alert: ChouTuanPeakCpuOverload
+          expr: |
+            (
+              sum(rate(container_cpu_usage_seconds_total{namespace="choutuan-namespace", pod=~"(gateway-service|product-service|order-service|notification-service)-.*"}[5m])) by (pod)
+              /
+              sum(kube_pod_container_resource_limits{namespace="choutuan-namespace", resource="cpu", pod=~"(gateway-service|product-service|order-service|notification-service)-.*"}) by (pod)
+            ) > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ChouTuan 午晚高峰 Pod CPU 持续过载 ({{ $labels.pod }})"
+            description: "Pod {{ $labels.pod }} CPU 使用率持续 5 分钟超过限额的 85%，请关注 HPA 扩容状态。"
+
+        - alert: ChouTuanOrderCloseDelayBacklog
+          expr: sum(rabbitmq_queue_messages_ready{namespace="choutuan-namespace", queue=~".*order.*(delay|close|dlx).*"}) > 100
+          for: 3m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ChouTuan 15 分钟延迟关单队列消息积压"
+            description: "15 分钟超时未支付自动关单队列待消费消息数持续 3 分钟超过 100 条，当前积压: {{ $value }}。"
