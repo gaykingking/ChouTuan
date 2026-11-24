@@ -22,6 +22,7 @@
 | `app/src/main/java/com/example/myapplication/ui/state/ChouTuanUiState.kt` | **状态层 (UDF)** | 单向数据流不可变状态 `ChouTuanUiState` 与用户意图 `ChouTuanIntent` 契约 |
 | `app/src/main/java/com/example/myapplication/domain/model/ChouTuanDomain.kt` | **领域层 (Domain)** | 纯 Kotlin 业务策略 `CommissionStrategy` 与 `TransparentPricingEngine` 零抽成透明计价引擎 |
 | `app/src/main/java/com/example/myapplication/data/repository/ChouTuanRepository.kt` | **仓库层 (Repository)** | 遵循依赖倒置原则的离线优先数据仓库，统一协调本地 Room 缓存与远程网关并支持 15 分钟超时关单记录 |
+| `app/src/test/java/com/example/myapplication/ChouTuanRepositoryTest.kt` | **单元测试 (Unit Test)** | 基于 JUnit 4 与 `InMemoryChouTuanRoomDao` 验证 `ChouTuanRepository` 离线缓存同步、15 分钟超时关单缓存写入及诊断日志记录 | |
 | `app/src/main/java/com/example/myapplication/data/local/ChouTuanDatabase.kt` | **本地持久化层 (Room)** | Room 实体表 (`TenantRoomEntity`, `OrderRoomEntity`) 与 `ChouTuanRoomDao` 数据库契约 |
 | `app/src/main/java/com/example/myapplication/data/remote/ChouTuanRetrofitNetwork.kt` | **网络网关层 (Retrofit)** | 对接后端 `gateway-service` / `product-service` / `order-service` 的多租户请求头与接口契约 |
 | `app/src/main/java/com/example/myapplication/sdk/LocationAndPaymentSdk.kt` | **第三方 SDK 适配层** | 高德地图球面距离测算 `AMapSphericalUtils` 与温和防催命骑手调度 ETA 算法 |
