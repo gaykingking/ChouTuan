@@ -4,6 +4,8 @@ import com.example.myapplication.data.local.OrderRoomEntity
 import com.example.myapplication.data.repository.ChouTuanRepository
 import com.example.myapplication.data.repository.DataResult
 import com.example.myapplication.di.InMemoryChouTuanRoomDao
+import com.example.myapplication.data.remote.NetworkRetryExecutor
+import java.io.IOException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -81,5 +83,34 @@ class ChouTuanRepositoryTest {
         assertEquals(50, logs.size)
         assertEquals("diag-log-6", logs.first())
         assertEquals("diag-log-55", logs.last())
+    }
+    @Test
+    fun executeWithRetry_succeedsAfterTransientFailure() = runBlocking {
+        val executor = NetworkRetryExecutor(maxRetries = 2, initialDelayMillis = 0L)
+val repository = ChouTuanRepository(localDao = InMemoryChouTuanRoomDao(), remoteApi = null, retryExecutor = executor)
+var attempts = 0
+val result = repository.executeWithRetry("fetchOrders") {
+attempts++
+if (attempts < 2) throw IOException("transient failure")
+"ok"
+}
+assertTrue(result is DataResult.Success)
+assertEquals("ok", (result as DataResult.Success).data)
+assertEquals(2, attempts)
+    }
+
+    @Test
+    fun executeWithRetry_returnsErrorAndLogsWhenRetriesExhausted() = runBlocking {
+        val executor = NetworkRetryExecutor(maxRetries = 1, initialDelayMillis = 0L)
+        val repository = ChouTuanRepository(localDao = InMemoryChouTuanRoomDao(), remoteApi = null, retryExecutor = executor)
+        var attempts = 0
+        val result = repository.executeWithRetry<String>("syncInventory") {
+            attempts++
+            throw IOException("network timeout")
+        }
+        assertTrue(result is DataResult.Error)
+        assertEquals(2, attempts)
+        val logs = repository.diagnosticsLogs.first()
+        assertTrue(logs.any { it.contains("syncInventory") && it.contains("failed after retries") })
     }
 }
