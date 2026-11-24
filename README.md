@@ -1,5 +1,5 @@
 # 丑团 (ChouTuan) — 反高抽成、拒绝两头吃的多租户原生安卓平台
-
+[![Android CI](https://github.com/gaykingking/ChouTuan/actions/workflows/android-ci.yml/badge.svg?branch=main)](https://github.com/gaykingking/ChouTuan/actions/workflows/android-ci.yml) [![Backend CI](https://github.com/gaykingking/ChouTuan/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/gaykingking/ChouTuan/actions/workflows/backend-ci.yml)
 基于 **Kotlin + Jetpack Compose + Material 3** 构建，遵循 **SOLID 原则** 与 **UDF 单向数据流** 分层架构。内置 **用户端 / 多租户商家端 / 骑手端** 一键切换闭环，涵盖餐饮外卖、丑团闪购、生鲜超市、到店团购、平价买药全频道。
 
 ## 核心设计理念
@@ -79,6 +79,10 @@
 | `backend-service/notification-service/src/main/resources/application.yml` | **消息推送服务配置 (notification-service)** | 配置 Nacos 服务注册发现、RocketMQ 消费与生产参数以及 Spring Boot Actuator Prometheus 指标暴露（`/actuator/prometheus`），接入 K3s 监控体系 |
 | `backend-contract/choutuan-postman-collection.json` | **Postman/Apifox 接口调试集合** | 收录网关、商品、订单与消息推送四大微服务的核心业务接口及环境变量模板，支持一键导入调试 |
 | `app/proguard-rules.pro` | **Android Release 混淆规则** | 适配 Retrofit、OkHttp、Gson、Room 与领域模型（`ChouTuanModels`）的代码保留规则，保障正式包打包可用 |
+| `app/src/main/java/com/example/myapplication/data/remote/NetworkRetryExecutor.kt` | **弱网自动重试执行器（Android）** | 封装 Android 端网络请求指数退避与弱网自动重试逻辑 |
+| `app/src/test/java/com/example/myapplication/NetworkRetryExecutorTest.kt` | **弱网重试单元测试（JUnit 4）** | 验证 `NetworkRetryExecutor` 的弱网重试次数、退避策略与异常边界逻辑 |
+| `LICENSE` | **开源许可证** | 项目开源授权协议说明文件 |
+| `CONTRIBUTING.md` | **开源贡献指南** | 规范仓库分支管理、代码提交（Commit）与 Pull Request 协作流程 |
 ## 运行方式
 1. 使用 Android  Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
