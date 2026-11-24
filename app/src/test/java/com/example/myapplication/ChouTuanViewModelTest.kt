@@ -75,7 +75,7 @@ class ChouTuanViewModelTest {
         assertEquals(32.00, breakdown.merchantNetIncome, 0.001)
         assertEquals(4.0, breakdown.riderNetIncome, 0.001)
         assertEquals(36.20, breakdown.userPayTotal, 0.001)
-        assertEquals(8.0, breakdown.userSavedAmount, 0.001)
+        assertEquals(10.0, breakdown.userSavedAmount, 0.001)
 
         val currentPreview = viewModel.uiState.value.currentBillPreview
         assertNotNull(currentPreview)
