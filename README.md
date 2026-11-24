@@ -56,7 +56,7 @@
 | `app/src/test/java/com/example/myapplication/LocationAndSdkUnitTest.kt` | **Android 端单元测试 (JUnit 4)** | 验证高德球面距离计算（`AMapSphericalUtils`）、多租户请求头拦截器与客户端 SDK 核心逻辑 |
 | `backend-service/gateway-service/src/test/java/com/choutuan/gateway/filter/MultiTenantGatewayFilterTest.java` | **网关服务单元测试 (JUnit 5)** | `gateway-service` 多租户全局路由过滤、`X-Tenant-Id` 透传与越权拦截单元测试 |
 | `backend-service/notification-service/src/test/java/com/choutuan/notification/RiderMerchantPushConsumerTest.java` | **消息推送服务单元测试 (JUnit 5)** | `notification-service` 验证 `ORDER_CREATED` / `MERCHANT_ACCEPTED_ZERO_COMMISSION` / `RIDER_DELIVERED_FULL_FEE` 多租户语音播报推送 |
-| `Makefile` | **全栈一键运维脚本** | 提供 `dev-up` / `dev-down`、`backend-test`、`android-test` / `android-apk`、`docker-build` 与 `k3s-deploy` 一键命令 
+| `Makefile` | **全栈一键运维脚本** | 提供 `dev-up` / `dev-down`、`backend-test`、`android-test` / `android-apk`、`docker-build` 与 `k3s-deploy` / `k3s-status` 一键命令 
 | `app/src/main/java/com/example/myapplication/ui/screens/RevenueAnalyticsScreen.kt` | **7日收益可视化报表页 (Android)** | 展示商家近7日 0 抽成收益趋势、同行业抽成对比与省佣金额可视化图表 |
 | `backend-service/order-service/src/main/java/com/choutuan/order/RevenueAnalyticsController.java` | **7日收益统计控制器 (order-service)** | 提供多租户商家近7日 0 抽成收益与省佣对比统计查询接口 |
 | `backend-service/order-service/src/test/java/com/choutuan/order/RevenueAnalyticsControllerTest.java` | **7日收益统计单元测试 (JUnit 5)** | `order-service` 7日收益可视化统计与省佣对比计算控制器单元测试 |
@@ -71,7 +71,8 @@
 | `backend-service/product-service/src/test/java/com/choutuan/product/health/ProductHealthControllerTest.java` | **健康检查端点单元测试 (product-service / JUnit 5)** | 使用 `MockMvc` 验证 `GET /product-service/api/v1/health` 返回 HTTP 200 及 `UP`、`ZERO_COMMISSION`、`0.20` 字段 |
 | `backend-service/gateway-service/src/main/java/com/choutuan/gateway/health/GatewayHealthController.java` | **K3s 健康检查端点 (gateway-service)** | 提供 WebFlux 响应式 `/health` 健康探针接口，返回 `UP`、`gateway-service`、`ZERO_COMMISSION` 政策与时间戳 |
 | `backend-service/gateway-service/src/test/java/com/choutuan/gateway/health/GatewayHealthControllerTest.java` | **健康检查端点单元测试 (gateway-service / JUnit 5)** | 直接调用 `new GatewayHealthController().health().block()` 验证返回 `UP`、`gateway-service`、`ZERO_COMMISSION` 与非空 `timestamp` |
-| `k8s/choutuan-k3s-hpa.yaml` | **K3s 高峰期 HPA 自动扩缩容清单** | 基于 `autoscaling/v2` 为 `gateway-service`、`product-service`、`order-service` 配置 CPU 利用率 70% 自动扩缩容（`minReplicas: 1`, `maxReplicas: 4`），适配午/晚高峰外卖流量波峰 |
+| `k8s/choutuan-k3s-hpa.yaml` | **K3s 高峰期 HPA 自动扩缩容清单** | 基于 `autoscaling/v2` 为 `gateway-service`、`product-service`、`order-service` 配置 CPU 利用率 70% 自动扩缩容（`minReplicas: 1`, `maxReplicas: 4`），适配午/晚高峰外卖流量波峰 | 
+| `k8s/choutuan-monitoring-rules.yaml` | **K3s Prometheus 监控告警清单** | 适配 K3s Prometheus + Grafana 监控体系的 `ServiceMonitor` 与 `PrometheusRule` 清单，覆盖 `choutuan-namespace` 四大微服务指标抓取及服务宕机、HTTP 5xx 异常率、午晚高峰 CPU 持续过载与 15 分钟延迟关单积压告警 |
 ## 运行方式
-1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
+1. 使用 Android  Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
