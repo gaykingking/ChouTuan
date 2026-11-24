@@ -84,3 +84,12 @@ rocketmq:
     group: choutuan-order-timeout-consumer-group
     consume-thread-max: 32
     dledger-enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: order-service
+      
