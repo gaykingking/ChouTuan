@@ -77,6 +77,8 @@
 | `k8s/choutuan-grafana-dashboard.json` | **K3s Grafana 四大微服务监控大盘模板** | 可直接导入 Grafana 的 `schemaVersion: 38` 可视化监控模板，基于 Prometheus/Micrometer 指标展示四大微服务实时 QPS、HTTP 5xx 异常率、P99 接口响应延迟与 JVM 堆内存使用量，支持 `$application` 多微服务筛选 |
 | `backend-service/product-service/src/main/resources/application.yml` | **商品服务配置 (product-service)** | 配置 Nacos 服务注册发现、MySQL/Redis 连接以及 Spring Boot Actuator Prometheus 指标暴露（`/actuator/prometheus`），接入 K3s 监控体系 |
 | `backend-service/notification-service/src/main/resources/application.yml` | **消息推送服务配置 (notification-service)** | 配置 Nacos 服务注册发现、RocketMQ 消费与生产参数以及 Spring Boot Actuator Prometheus 指标暴露（`/actuator/prometheus`），接入 K3s 监控体系 |
+| `backend-contract/choutuan-postman-collection.json` | **Postman/Apifox 接口调试集合** | 收录网关、商品、订单与消息推送四大微服务的核心业务接口及环境变量模板，支持一键导入调试 |
+| `app/proguard-rules.pro` | **Android Release 混淆规则** | 适配 Retrofit、OkHttp、Gson、Room 与领域模型（`ChouTuanModels`）的代码保留规则，保障正式包打包可用 |
 ## 运行方式
 1. 使用 Android  Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
