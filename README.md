@@ -68,6 +68,10 @@
 | `backend-service/product-service/src/main/java/com/choutuan/product/health/ProductHealthController.java` | **K3s 健康检查端点 (product-service)** | 提供 `GET /product-service/api/v1/health` 健康探针接口，返回服务状态、`ZERO_COMMISSION` 政策与 `0.20` 固定通道费 |
 | `backend-service/notification-service/src/main/java/com/choutuan/notification/health/NotificationHealthController.java` | **K3s 健康检查端点 (notification-service)** | 提供 `GET /notification-service/api/v1/health` 健康探针接口，返回服务状态、`ZERO_COMMISSION` 政策与 `0.20` 固定通道费 |
 | `backend-service/notification-service/src/test/java/com/choutuan/notification/health/NotificationHealthControllerTest.java` | **健康检查端点单元测试 (JUnit 5)** | 使用 `MockMvc` 验证 `GET /notification-service/api/v1/health` 返回 HTTP 200 及 `UP`、`ZERO_COMMISSION`、`0.20` 字段 |
+| `backend-service/product-service/src/test/java/com/choutuan/product/health/ProductHealthControllerTest.java` | **健康检查端点单元测试 (product-service / JUnit 5)** | 使用 `MockMvc` 验证 `GET /product-service/api/v1/health` 返回 HTTP 200 及 `UP`、`ZERO_COMMISSION`、`0.20` 字段 |
+| `backend-service/gateway-service/src/main/java/com/choutuan/gateway/health/GatewayHealthController.java` | **K3s 健康检查端点 (gateway-service)** | 提供 WebFlux 响应式 `/health` 健康探针接口，返回 `UP`、`gateway-service`、`ZERO_COMMISSION` 政策与时间戳 |
+| `backend-service/gateway-service/src/test/java/com/choutuan/gateway/health/GatewayHealthControllerTest.java` | **健康检查端点单元测试 (gateway-service / JUnit 5)** | 直接调用 `new GatewayHealthController().health().block()` 验证返回 `UP`、`gateway-service`、`ZERO_COMMISSION` 与非空 `timestamp` |
+| `k8s/choutuan-k3s-hpa.yaml` | **K3s 高峰期 HPA 自动扩缩容清单** | 基于 `autoscaling/v2` 为 `gateway-service`、`product-service`、`order-service` 配置 CPU 利用率 70% 自动扩缩容（`minReplicas: 1`, `maxReplicas: 4`），适配午/晚高峰外卖流量波峰 |
 ## 运行方式
 1. 使用 Android Studio（支持 AGP 9.4.1 / Kotlin 2.2+）打开本项目或执行 `git pull`。
 2. 直接点击 Run 运行至真机或模拟器，通过顶部角色栏即可在 **用户端 / 商家端(多租户) / 骑手端** 之间实时联动测试。
