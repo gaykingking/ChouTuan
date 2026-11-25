@@ -192,7 +192,8 @@ onToggleDarkTheme: () -> Unit
                 merchantNetIncome = 37.6,
                 riderNetIncome = 4.0,
                 platformTechFee = 0.4,
-                isCompleted = false
+                isCompleted = false,
+                canCancel = true
             )
         )
     }
@@ -462,6 +463,10 @@ TextButton(onClick = onToggleDarkTheme) {
                                         isCompleted = done
                                     )
                                 }
+                            },
+                            onCancelOrder = { orderId ->
+                                radarOrders.removeAll { it.orderId == orderId }
+                                Toast.makeText(context, "订单已 0 手续费全额原路退款取消", Toast.LENGTH_SHORT).show()
                             }
                         )
 
@@ -513,7 +518,8 @@ TextButton(onClick = onToggleDarkTheme) {
                                 merchantNetIncome = 38.0,
                                 riderNetIncome = tenantToShow.riderFee,
                                 platformTechFee = 0.4,
-                                isCompleted = false
+                                isCompleted = false,
+                               canCancel = true 
                             )
                         )
                         activeBillPreview = null
