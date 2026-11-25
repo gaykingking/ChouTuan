@@ -115,4 +115,17 @@ public class TransparentOrderController {
                 "redeemedAt", Instant.now().toString()
         ));
     }
+    @PostMapping("/orders/{orderId}/cancel")
+    public ResponseEntity<Map<String, Object>> cancelOrder(
+        @RequestHeader(value = "X-Tenant-Id", defaultValue = "tenant_food_1") String tenantId,
+        @PathVariable String orderId) {
+        return ResponseEntity.ok(Map.of(
+            "tenantId", tenantId,
+            "orderId", orderId,
+            "status", "CANCELLED_BY_USER",
+            "cancelFee", BigDecimal.ZERO,
+            "refundPolicy", "ZERO_FEE_FULL_REFUND",
+            "cancelledAt", Instant.now().toString()
+            ));
+    } 
 }
